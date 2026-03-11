@@ -658,7 +658,7 @@
       </div>
       <div class="card-body">
         <div class="scan-zone">
-          <input type="text" id="scan-input" placeholder="Scannez ou tapez un code barre…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="numeric" autofocus />
+          <input type="text" id="scan-input" placeholder="" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="numeric" autofocus />
           <div class="scan-icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="2" height="14"/><rect x="7" y="4" width="1" height="14"/><rect x="10" y="4" width="2" height="14"/><rect x="14" y="4" width="1" height="14"/><rect x="17" y="4" width="2" height="14"/></svg>
           </div>
@@ -788,30 +788,11 @@ scanInput.addEventListener('keydown', function(e) {
   }
 });
 
-// Auto-focus on scan input — permanent, revient toujours après clic dans le vide
+// Refocus scan input uniquement sur desktop (keydown hors champ)
 document.addEventListener('keydown', function(e) {
   const tag = document.activeElement.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA') return;
   scanInput.focus();
-});
-
-document.addEventListener('click', function(e) {
-  // Si le clic n'est pas sur un input, textarea, button ou select → refocus scan
-  const tag = e.target.tagName;
-  if (!['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT', 'LABEL'].includes(tag)) {
-    setTimeout(() => scanInput.focus(), 50);
-  }
-});
-
-document.addEventListener('focusout', function(e) {
-  // Revenir sur scanInput seulement si le focus va nulle part (clic dans le vide)
-  setTimeout(() => {
-    const active = document.activeElement;
-    // Si le focus est sur body ou html → rien n'est sélectionné, revenir sur scan
-    if (!active || active === document.body || active === document.documentElement) {
-      scanInput.focus();
-    }
-  }, 150);
 });
 
 function addManual() {
@@ -1037,6 +1018,38 @@ function escapeHtml(s) {
 }
 
 // ── Init ───────────────────────────────────────────────
+
+// Placeholder défilant sur mobile
+(function() {
+  const text = '  Scannez ou tapez un code barre…  ';
+  const speed = 120; // ms par caractère
+  let pos = 0;
+  let timer = null;
+
+  function tick() {
+    if (document.activeElement === scanInput) return;
+    scanInput.placeholder = text.slice(pos) + text.slice(0, pos);
+    pos = (pos + 1) % text.length;
+  }
+
+  function startScroll() {
+    if (!timer) timer = setInterval(tick, speed);
+  }
+
+  function stopScroll() {
+    clearInterval(timer);
+    timer = null;
+    scanInput.placeholder = '';
+  }
+
+  scanInput.addEventListener('focus', stopScroll);
+  scanInput.addEventListener('blur', () => {
+    setTimeout(startScroll, 500);
+  });
+
+  startScroll();
+})();
+
 scanInput.focus();
 
 // ── PWA Service Worker (inline) ────────────────────────
