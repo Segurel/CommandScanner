@@ -994,16 +994,28 @@ function exportXLS() {
   ];
   items.forEach(item => rows.push([item.code, item.qty]));
 
-  // Build tab-separated content with .xls extension (recognized by Excel)
   const tsv = rows.map(r => r.join(';')).join('\r\n');
   const BOM = '\uFEFF';
   const blob = new Blob([BOM + tsv], { type: 'text/csv' });
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const filename = `COMMANDE_${code}_${today}.csv`;
+
+  // iOS/Android : feuille de partage native (ouvre Mail, Excel, etc.)
+  if (navigator.share && navigator.canShare) {
+    const file = new File([blob], filename, { type: 'text/csv' });
+    if (navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: filename })
+        .then(() => toast(`✓ Fichier partagé — ${items.length} lignes`))
+        .catch(err => { if (err.name !== 'AbortError') toast('Erreur partage', true); });
+      return;
+    }
+  }
+
+  // Desktop : téléchargement classique
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-
-  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
-  a.download = `COMMANDE_${code}_${today}.csv`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
   toast(`✓ Fichier exporté — ${items.length} lignes`);
