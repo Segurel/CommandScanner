@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Commande — Scan mobile</title>
+  <title>Commande — Scan mobile libre</title>
   <meta name="theme-color" content="#0f1117" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Segurel" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="manifest" href="manifest_free.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <style>
@@ -25,283 +25,151 @@
       --warn:#ff7878;
       --shadow:0 10px 28px rgba(0,0,0,.28);
       --radius:14px;
-      --radius-sm:10px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    body{min-height:100vh; padding:calc(var(--safe-top) + 10px) 12px calc(var(--safe-bottom) + 20px)}
+    body{min-height:100vh;padding:calc(var(--safe-top) + 10px) 12px calc(var(--safe-bottom) + 20px)}
     .app{max-width:980px;margin:0 auto}
     .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
     .brand{display:flex;align-items:center;gap:12px;min-width:0}
     .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1f2940,#0d1118);display:grid;place-items:center;box-shadow:var(--shadow);border:1px solid var(--line)}
-    .logo-bars{display:flex;gap:2px;height:22px;align-items:flex-end}
-    .logo-bars span{display:block;width:3px;background:var(--accent);border-radius:3px}
+    .logo-bars{display:flex;gap:2px;height:22px;align-items:flex-end}.logo-bars span{display:block;width:3px;background:var(--accent);border-radius:3px}
     .logo-bars span:nth-child(1){height:12px}.logo-bars span:nth-child(2){height:20px}.logo-bars span:nth-child(3){height:16px}.logo-bars span:nth-child(4){height:22px}.logo-bars span:nth-child(5){height:10px}
-    .titles{min-width:0}
-    .title{font-size:clamp(20px,3vw,28px);font-weight:800;line-height:1.1}
-    .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .title{font-size:clamp(20px,3vw,28px);font-weight:800;line-height:1.1}.sub{font-size:12px;color:var(--muted)}
     .status{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.02);font-size:13px;color:var(--muted);white-space:nowrap}
     .status-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(0,224,164,.15)}
     .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}
     .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
     .card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
-    .card-title{font-weight:800;font-size:16px}
-    .card-sub{font-size:12px;color:var(--muted)}
+    .card-title{font-weight:800;font-size:16px}.card-sub{font-size:12px;color:var(--muted)}
     .card-body{padding:14px 16px}
     .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px}
     .stat{padding:14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
-    .stat-value{font-size:26px;font-weight:800;color:var(--accent);line-height:1}
-    .stat-label{margin-top:6px;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
-    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .field{display:flex;flex-direction:column;gap:6px}
-    .field.full{grid-column:1/-1}
+    .stat-value{font-size:26px;font-weight:800;color:var(--accent);line-height:1}.stat-label{margin-top:6px;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
     label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-    input, textarea, button, select{font:inherit}
-    input[type="text"], input[type="number"], input[type="date"], textarea{
-      width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;background:#0e1420;color:var(--text);padding:12px 14px;outline:none;transition:border-color .18s, box-shadow .18s, transform .06s ease; font-size:16px;
-    }
+    input, textarea, button{font:inherit}
+    input[type="text"], input[type="number"], input[type="date"], textarea{width:100%;min-height:46px;border:1px solid var(--line);border-radius:12px;background:#0e1420;color:var(--text);padding:12px 14px;outline:none;transition:border-color .18s, box-shadow .18s, transform .06s ease;font-size:16px}
     textarea{min-height:120px;resize:vertical;line-height:1.45}
-    input:focus, textarea:focus{border-color:var(--accent-2);box-shadow:0 0 0 4px rgba(94,203,255,.14)}
-    input[readonly]{background:#0c111a;color:#dce6ff}
+    input:focus, textarea:focus{border-color:var(--accent-2);box-shadow:0 0 0 4px rgba(94,203,255,.14)} input[readonly]{background:#0c111a;color:#dce6ff}
     .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.02em}
     .qty-row{display:grid;grid-template-columns:120px 1fr auto;gap:12px;align-items:end}
-    .btn{appearance:none;border:1px solid transparent;border-radius:12px;min-height:46px;padding:0 16px;font-weight:800;cursor:pointer;transition:transform .06s ease, filter .18s ease, border-color .18s ease}
-    .btn:active{transform:translateY(1px)}
-    .btn-primary{background:var(--accent);color:#032219}
-    .btn-secondary{background:#20283a;color:var(--text);border-color:var(--line)}
-    .btn-danger{background:#301a1f;color:#ffd7d7;border-color:#5a2c34}
-    .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
-    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .btn{appearance:none;border:1px solid transparent;border-radius:12px;min-height:46px;padding:0 16px;font-weight:800;cursor:pointer;transition:transform .06s ease, filter .18s ease, border-color .18s ease}.btn:active{transform:translateY(1px)}
+    .btn-primary{background:var(--accent);color:#032219}.btn-secondary{background:#20283a;color:var(--text);border-color:var(--line)}.btn-danger{background:#301a1f;color:#ffd7d7;border-color:#5a2c34}.btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}.btn:disabled{opacity:.55;cursor:not-allowed}
     .helper{margin-top:8px;font-size:12px;color:var(--muted)}
-    .scan-flash{animation:flash .55s ease}
-    @keyframes flash{0%{box-shadow:0 0 0 0 rgba(0,224,164,.45)}100%{box-shadow:0 0 0 18px rgba(0,224,164,0)}}
+    .scan-flash{animation:flash .55s ease}@keyframes flash{0%{box-shadow:0 0 0 0 rgba(0,224,164,.45)}100%{box-shadow:0 0 0 18px rgba(0,224,164,0)}}
     .scanner-wrap{position:relative;height:340px;border-radius:14px;overflow:hidden;background:#0a0e15;border:1px solid var(--line)}
-    #scanner-host{position:absolute;inset:0}
-    .scanner-overlay{pointer-events:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-    .finder{width:min(78vw,360px);height:min(28vw,120px);border:2px solid rgba(0,224,164,.9);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.20)}
-    .scanner-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .camera-note{font-size:12px;color:var(--muted);margin-top:8px}
+    #scanner-host{position:absolute;inset:0;overflow:hidden}
+    #scanner-host video, #scanner-host canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .scanner-overlay{pointer-events:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}.finder{width:min(78vw,360px);height:min(28vw,120px);border:2px solid rgba(0,224,164,.9);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.20)}
+    .scanner-toolbar,.paste-actions,.bottom-actions{display:flex;gap:10px;flex-wrap:wrap}.scanner-toolbar{margin-top:12px}
+    .camera-note,.footer-note{font-size:12px;color:var(--muted);margin-top:8px}.footer-note{font-size:11px}
     .table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:520px;background:#0d1320}
-    table{width:100%;border-collapse:separate;border-spacing:0}
-    thead th{position:sticky;top:0;background:#101726;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:12px;padding:12px;border-bottom:1px solid var(--line);text-align:left;z-index:2}
-    tbody td{padding:12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
-    tbody tr.new-row{animation:newrow .32s ease}
-    @keyframes newrow{0%{background:rgba(0,224,164,.14)}100%{background:transparent}}
-    .td-num{width:58px;color:var(--muted)}
-    .td-code{min-width:180px}
-    .td-qty{width:118px}
-    .qty-edit{width:86px;min-height:40px;padding:8px 10px;border-radius:10px}
+    table{width:100%;border-collapse:separate;border-spacing:0} thead th{position:sticky;top:0;background:#101726;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:12px;padding:12px;border-bottom:1px solid var(--line);text-align:left;z-index:2}
+    tbody td{padding:12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle} tbody tr.new-row{animation:newrow .32s ease}@keyframes newrow{0%{background:rgba(0,224,164,.14)}100%{background:transparent}}
+    .td-num{width:58px;color:var(--muted)} .td-code{min-width:180px} .td-qty{width:118px} .qty-edit{width:86px;min-height:40px;padding:8px 10px;border-radius:10px}
     .btn-del{appearance:none;border:1px solid #5a2c34;background:#301a1f;color:#ffd7d7;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:800}
-    .table-info{font-size:12px;color:var(--muted);margin-bottom:10px}
-    .empty{padding:30px 16px;text-align:center;color:var(--muted)}
-    .empty-title{font-weight:800;color:#dce6ff;margin-top:8px}
-    .paste-actions, .bottom-actions{display:flex;gap:10px;flex-wrap:wrap}
-    .bottom-actions{margin-top:14px}
-    .footer-note{margin-top:10px;font-size:11px;color:var(--muted)}
+    .table-info{font-size:12px;color:var(--muted);margin-bottom:10px}.empty{padding:30px 16px;text-align:center;color:var(--muted)}.empty-title{font-weight:800;color:#dce6ff;margin-top:8px}
     .toast{position:fixed;left:50%;bottom:calc(var(--safe-bottom) + 16px);transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#132030;border:1px solid var(--line);color:var(--text);padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);transition:opacity .2s ease, transform .2s ease;z-index:9999;max-width:min(92vw,460px)}
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    .toast.warn{border-color:#7b4040;background:#2a1d22;color:#ffe1e1}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.warn{border-color:#7b4040;background:#2a1d22;color:#ffe1e1}
     .hidden{display:none !important}
-    @media (max-width: 900px){
-      .grid{grid-template-columns:1fr}
-      .qty-row{grid-template-columns:1fr 1fr}
-      .qty-row > .field.full-mobile{grid-column:1/-1}
-      .scanner-wrap{height:300px}
-    }
-    @media (max-width: 560px){
-      body{padding-left:10px;padding-right:10px}
-      .header{align-items:flex-start;flex-direction:column}
-      .status{align-self:stretch;justify-content:center}
-      .card-head,.card-body{padding:12px}
-      .field-grid{grid-template-columns:1fr}
-      .qty-row{grid-template-columns:1fr}
-      .scanner-wrap{height:270px}
-      .finder{width:min(84vw,340px);height:min(32vw,110px)}
-      .bottom-actions .btn, .paste-actions .btn, .scanner-toolbar .btn{flex:1 1 160px}
-    }
+    @media (max-width: 900px){.grid{grid-template-columns:1fr}.qty-row{grid-template-columns:1fr 1fr}.qty-row>.field.full-mobile{grid-column:1/-1}.scanner-wrap{height:300px}}
+    @media (max-width: 560px){body{padding-left:10px;padding-right:10px}.header{align-items:flex-start;flex-direction:column}.status{align-self:stretch;justify-content:center}.card-head,.card-body{padding:12px}.field-grid,.qty-row{grid-template-columns:1fr}.scanner-wrap{height:270px}.finder{width:min(84vw,340px);height:min(32vw,110px)}.bottom-actions .btn,.paste-actions .btn,.scanner-toolbar .btn{flex:1 1 160px}}
   </style>
 </head>
 <body>
   <div class="app">
     <header class="header">
       <div class="brand">
-        <div class="logo" aria-hidden="true">
-          <div class="logo-bars"><span></span><span></span><span></span><span></span><span></span></div>
-        </div>
-        <div class="titles">
+        <div class="logo" aria-hidden="true"><div class="logo-bars"><span></span><span></span><span></span><span></span><span></span></div></div>
+        <div>
           <div class="title">Commande</div>
-          <div class="sub">Scan mobile iPhone / Android — EAN‑13 et MSI 6 chiffres</div>
+          <div class="sub">Scan mobile libre — EAN‑13 et Code 128 (6 chiffres)</div>
         </div>
       </div>
       <div class="status"><span class="status-dot" id="status-dot"></span><span id="header-status">Prêt à scanner</span></div>
     </header>
-
     <div class="grid">
       <section>
         <div class="stats">
-          <div class="stat">
-            <div class="stat-value" id="stat-lines">0</div>
-            <div class="stat-label">Lignes</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value" id="stat-qty">0</div>
-            <div class="stat-label">Quantité</div>
-          </div>
+          <div class="stat"><div class="stat-value" id="stat-lines">0</div><div class="stat-label">Lignes</div></div>
+          <div class="stat"><div class="stat-value" id="stat-qty">0</div><div class="stat-label">Quantité</div></div>
         </div>
-
         <article class="card">
-          <div class="card-head">
-            <div>
-              <div class="card-title">En-tête commande</div>
-              <div class="card-sub">Informations obligatoires pour l’export</div>
-            </div>
-          </div>
+          <div class="card-head"><div><div class="card-title">En-tête commande</div><div class="card-sub">Informations obligatoires pour l’export</div></div></div>
           <div class="card-body">
             <div class="field-grid">
-              <div class="field">
-                <label for="customer-code">Code client / fournisseur</label>
-                <input id="customer-code" class="mono" type="text" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6 chiffres" autocomplete="off" />
-              </div>
-              <div class="field">
-                <label for="delivery-date">Délai de livraison</label>
-                <input id="delivery-date" type="date" />
-              </div>
-              <div class="field full">
-                <label for="order-type">Type</label>
-                <input id="order-type" type="text" value="COMMANDE" readonly />
-              </div>
+              <div class="field"><label for="customer-code">Code client / fournisseur</label><input id="customer-code" class="mono" type="text" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6 chiffres" autocomplete="off" /></div>
+              <div class="field"><label for="delivery-date">Délai de livraison</label><input id="delivery-date" type="date" /></div>
+              <div class="field full"><label for="order-type">Type</label><input id="order-type" type="text" value="COMMANDE" readonly /></div>
             </div>
           </div>
         </article>
-
         <article class="card" style="margin-top:14px">
-          <div class="card-head">
-            <div>
-              <div class="card-title">Saisie scanner</div>
-              <div class="card-sub">Saisie manuelle, scanner clavier ou code lu par la caméra</div>
-            </div>
-          </div>
+          <div class="card-head"><div><div class="card-title">Saisie scanner</div><div class="card-sub">Saisie manuelle, scanner clavier ou code lu par la caméra</div></div></div>
           <div class="card-body">
             <div class="qty-row">
-              <div class="field">
-                <label for="qty-input">Quantité</label>
-                <input id="qty-input" class="mono" type="number" min="1" step="1" value="1" inputmode="numeric" />
-              </div>
-              <div class="field full-mobile">
-                <label for="scan-input">Code article</label>
-                <input id="scan-input" class="mono" type="text" inputmode="numeric" autocomplete="off" placeholder="EAN‑13 (13 chiffres) ou code interne MSI (6 chiffres)" />
-              </div>
+              <div class="field"><label for="qty-input">Quantité</label><input id="qty-input" class="mono" type="number" min="1" step="1" value="1" inputmode="numeric" /></div>
+              <div class="field full-mobile"><label for="scan-input">Code article</label><input id="scan-input" class="mono" type="text" inputmode="numeric" autocomplete="off" placeholder="EAN‑13 (13 chiffres) ou code interne Code 128 (6 chiffres)" /></div>
               <button id="btn-add" class="btn btn-primary">Ajouter</button>
             </div>
-            <div class="helper">Validation stricte&nbsp;: <strong>EAN‑13 = 13 chiffres</strong> ou <strong>MSI = 6 chiffres sans checksum</strong>.</div>
+            <div class="helper">Validation stricte : <strong>EAN‑13 = 13 chiffres</strong> ou <strong>code interne = 6 chiffres</strong>. La caméra lit <strong>EAN</strong> et <strong>Code 128</strong>.</div>
           </div>
         </article>
-
         <article class="card" style="margin-top:14px">
-          <div class="card-head">
-            <div>
-              <div class="card-title">Import / collage</div>
-              <div class="card-sub">Une ligne = <span class="mono">code;quantité</span> ou <span class="mono">code quantité</span></div>
-            </div>
-          </div>
+          <div class="card-head"><div><div class="card-title">Import / collage</div><div class="card-sub">Une ligne = <span class="mono">code;quantité</span> ou <span class="mono">code quantité</span></div></div></div>
           <div class="card-body">
-            <div class="field">
-              <label for="paste-zone">Zone de collage</label>
-              <textarea id="paste-zone" class="mono" placeholder="Exemples:
+            <div class="field"><label for="paste-zone">Zone de collage</label><textarea id="paste-zone" class="mono" placeholder="Exemples:
 2404105001722;3
-123456;2
-2404105001722 1"></textarea>
-            </div>
-            <div class="paste-actions">
-              <button id="btn-import" class="btn btn-secondary">Importer</button>
-              <button id="btn-clear-paste" class="btn btn-ghost">Vider la zone</button>
-            </div>
+580886;2
+2404105001722 1"></textarea></div>
+            <div class="paste-actions"><button id="btn-import" class="btn btn-secondary">Importer</button><button id="btn-clear-paste" class="btn btn-ghost">Vider la zone</button></div>
           </div>
         </article>
       </section>
-
       <section>
         <article class="card">
-          <div class="card-head">
-            <div>
-              <div class="card-title">Scan caméra</div>
-              <div class="card-sub">iPhone / Android — EAN‑13 et MSI 6 chiffres uniquement</div>
-            </div>
-          </div>
+          <div class="card-head"><div><div class="card-title">Scan caméra</div><div class="card-sub">iPhone / Android — EAN‑13 et Code 128 uniquement</div></div></div>
           <div class="card-body">
-            <div class="scanner-wrap" id="scanner-shell">
-              <div id="scanner-host"></div>
-              <div class="scanner-overlay"><div class="finder"></div></div>
-            </div>
-            <div class="scanner-toolbar">
-              <button id="btn-camera-start" class="btn btn-primary">Démarrer la caméra</button>
-              <button id="btn-camera-stop" class="btn btn-secondary" disabled>Arrêter</button>
-            </div>
-            <div class="camera-note">Au premier démarrage caméra, l’app demandera votre clé de licence STRICH si elle n’est pas encore enregistrée localement.</div>
+            <div class="scanner-wrap"><div id="scanner-host"></div><div class="scanner-overlay"><div class="finder"></div></div></div>
+            <div class="scanner-toolbar"><button id="btn-camera-start" class="btn btn-primary">Démarrer la caméra</button><button id="btn-camera-stop" class="btn btn-secondary" disabled>Arrêter</button></div>
+            <div class="camera-note">Astuce : gardez le code bien horizontal dans la fenêtre de visée, avec un bon contraste et un peu de marge blanche autour.</div>
             <div class="footer-note">La lecture caméra nécessite HTTPS (ou localhost) et l’autorisation d’accès à la caméra.</div>
           </div>
         </article>
-
         <article class="card" style="margin-top:14px">
-          <div class="card-head">
-            <div>
-              <div class="card-title">Articles scannés</div>
-              <div class="card-sub" id="table-info">—</div>
-            </div>
-          </div>
+          <div class="card-head"><div><div class="card-title">Articles scannés</div><div class="card-sub" id="table-info">—</div></div></div>
           <div class="card-body">
             <div class="table-wrap">
               <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Code</th>
-                    <th>Type</th>
-                    <th>Quantité</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Code</th><th>Type</th><th>Quantité</th><th>Action</th></tr></thead>
                 <tbody id="rows-body"></tbody>
               </table>
-              <div id="empty-state" class="empty">
-                <div style="font-size:32px">📦</div>
-                <div class="empty-title">Aucun article scanné</div>
-                <div>Scannez un code, ajoutez-le manuellement ou importez une liste.</div>
-              </div>
+              <div id="empty-state" class="empty"><div style="font-size:32px">📦</div><div class="empty-title">Aucun article scanné</div><div>Scannez un code, ajoutez-le manuellement ou importez une liste.</div></div>
             </div>
-            <div class="bottom-actions">
-              <button id="btn-export" class="btn btn-secondary">Exporter CSV</button>
-              <button id="btn-clear-all" class="btn btn-danger">Vider</button>
-            </div>
+            <div class="bottom-actions"><button id="btn-export" class="btn btn-secondary">Exporter CSV</button><button id="btn-clear-all" class="btn btn-danger">Vider</button></div>
             <div class="footer-note">Le bouton <strong>Vider</strong> demande un double appui rapide pour confirmation.</div>
           </div>
         </article>
       </section>
     </div>
   </div>
-
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script type="module">
-    import { StrichSDK, BarcodeReader } from "https://cdn.jsdelivr.net/npm/@pixelverse/strichjs-sdk@latest";
-
-    const APP_VERSION = 'v1';
-    const STORAGE_KEY = 'segurel-order-state-mobile-camera-' + APP_VERSION;
-    const STRICH_KEY_STORAGE = 'strichLicenseKey';
-    const DEFAULT_DUPLICATE_INTERVAL = 1200;
-
+  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+  <script>
+    const STORAGE_KEY = 'segurel-order-state-free-v1';
     const state = {
-      customerCode: '',
-      deliveryDate: '',
       type: 'COMMANDE',
       items: [],
-      clearConfirmAt: 0,
-      strichInitialized: false,
-      barcodeReader: null,
       cameraRunning: false,
-      lastFlashAt: 0
+      clearConfirmAt: 0,
+      lastDetectedCode: '',
+      lastDetectedAt: 0,
+      onDetected: null,
+      onProcessed: null
     };
 
     const els = {
@@ -309,7 +177,6 @@
       statusDot: document.getElementById('status-dot'),
       customerCode: document.getElementById('customer-code'),
       deliveryDate: document.getElementById('delivery-date'),
-      orderType: document.getElementById('order-type'),
       qtyInput: document.getElementById('qty-input'),
       scanInput: document.getElementById('scan-input'),
       pasteZone: document.getElementById('paste-zone'),
@@ -320,7 +187,7 @@
       btnClearAll: document.getElementById('btn-clear-all'),
       btnCameraStart: document.getElementById('btn-camera-start'),
       btnCameraStop: document.getElementById('btn-camera-stop'),
-      scannerShell: document.getElementById('scanner-shell'),
+      scannerHost: document.getElementById('scanner-host'),
       tableInfo: document.getElementById('table-info'),
       rowsBody: document.getElementById('rows-body'),
       emptyState: document.getElementById('empty-state'),
@@ -335,14 +202,28 @@
       return d.toISOString().slice(0, 10);
     }
 
+    function normalizeDigits(value) {
+      return String(value || '').replace(/\D+/g, '');
+    }
+
+    function detectCodeType(code) {
+      if (/^\d{13}$/.test(code)) return 'EAN‑13';
+      if (/^\d{6}$/.test(code)) return 'CODE128';
+      return null;
+    }
+
+    function sanitizeQty(value) {
+      const n = parseInt(String(value || '').trim(), 10);
+      return Number.isFinite(n) && n > 0 ? n : 1;
+    }
+
+    function isValidCustomerCode(code) {
+      return /^\d{6}$/.test(normalizeDigits(code));
+    }
+
     function setStatus(text, mode = 'ok') {
       els.headerStatus.textContent = text;
-      const colors = {
-        ok: '#00e0a4',
-        busy: '#5ecbff',
-        warn: '#ffb86b',
-        error: '#ff7878'
-      };
+      const colors = { ok:'#00e0a4', busy:'#5ecbff', warn:'#ffb86b', error:'#ff7878' };
       els.statusDot.style.background = colors[mode] || colors.ok;
       els.statusDot.style.boxShadow = `0 0 0 4px ${mode === 'error' ? 'rgba(255,120,120,.15)' : mode === 'busy' ? 'rgba(94,203,255,.16)' : mode === 'warn' ? 'rgba(255,184,107,.18)' : 'rgba(0,224,164,.15)'}`;
     }
@@ -363,33 +244,12 @@
       els.scanInput.classList.add('scan-flash');
     }
 
-    function normalizeDigits(value) {
-      return String(value || '').replace(/\D+/g, '');
-    }
-
-    function detectCodeType(code) {
-      if (/^\d{13}$/.test(code)) return 'EAN‑13';
-      if (/^\d{6}$/.test(code)) return 'MSI';
-      return null;
-    }
-
-    function isValidCustomerCode(code) {
-      return /^\d{6}$/.test(normalizeDigits(code));
-    }
-
-    function sanitizeQty(value) {
-      const n = parseInt(String(value || '').trim(), 10);
-      return Number.isFinite(n) && n > 0 ? n : 1;
-    }
-
     function saveState() {
-      const payload = {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
         customerCode: normalizeDigits(els.customerCode.value).slice(0, 6),
         deliveryDate: els.deliveryDate.value,
-        type: state.type,
         items: state.items
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      }));
     }
 
     function loadState() {
@@ -397,14 +257,14 @@
       if (!raw) return;
       try {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') {
-          state.items = Array.isArray(parsed.items) ? parsed.items.filter(x => x && typeof x.code === 'string').map(x => ({
-            code: normalizeDigits(x.code),
-            qty: sanitizeQty(x.qty),
-            type: detectCodeType(normalizeDigits(x.code)) || x.type || '—'
-          })).filter(x => !!x.type) : [];
-          if (parsed.customerCode) els.customerCode.value = normalizeDigits(parsed.customerCode).slice(0, 6);
-          if (parsed.deliveryDate) els.deliveryDate.value = parsed.deliveryDate;
+        if (parsed.customerCode) els.customerCode.value = normalizeDigits(parsed.customerCode).slice(0, 6);
+        if (parsed.deliveryDate) els.deliveryDate.value = parsed.deliveryDate;
+        if (Array.isArray(parsed.items)) {
+          state.items = parsed.items.map(item => ({
+            code: normalizeDigits(item.code),
+            qty: sanitizeQty(item.qty),
+            type: detectCodeType(normalizeDigits(item.code)) || item.type || '—'
+          })).filter(item => !!item.type);
         }
       } catch (_) {}
     }
@@ -431,9 +291,7 @@
           <td class="td-qty"><input class="qty-edit mono" type="number" min="1" step="1" value="${sanitizeQty(item.qty)}" aria-label="Quantité ${item.code}" /></td>
           <td><button class="btn-del" type="button">Supprimer</button></td>
         `;
-        const qtyInput = tr.querySelector('.qty-edit');
-        qtyInput.addEventListener('change', () => changeQty(index, qtyInput.value));
-        qtyInput.addEventListener('focus', () => qtyInput.select());
+        tr.querySelector('.qty-edit').addEventListener('change', (e) => changeQty(index, e.target.value));
         tr.querySelector('.btn-del').addEventListener('click', () => deleteRow(index));
         frag.appendChild(tr);
       });
@@ -444,14 +302,14 @@
     function focusScanInput() {
       if (state.cameraRunning) return;
       els.scanInput.focus({ preventScroll: false });
-      els.scanInput.select?.();
+      if (els.scanInput.select) els.scanInput.select();
     }
 
     function addOrIncrement(code, qty, source = 'manual') {
       const normalizedCode = normalizeDigits(code);
       const type = detectCodeType(normalizedCode);
       if (!type) {
-        toast('Code invalide — EAN‑13 (13 chiffres) ou code interne MSI (6 chiffres) requis', true);
+        toast('Code invalide — EAN‑13 (13 chiffres) ou code interne (6 chiffres) requis', true);
         return false;
       }
       const q = sanitizeQty(qty);
@@ -459,14 +317,13 @@
       if (existing) {
         existing.qty += q;
         renderRows(normalizedCode);
-        flashScanInput();
         toast(`Code ${normalizedCode} → +${q} (total: ${existing.qty})`);
       } else {
         state.items.push({ code: normalizedCode, qty: q, type });
         renderRows(normalizedCode);
-        flashScanInput();
         toast(`✓ ${normalizedCode} ×${q} — ${type}`);
       }
+      flashScanInput();
       if (source !== 'import') {
         els.scanInput.value = '';
         els.qtyInput.value = '1';
@@ -481,11 +338,23 @@
       return addOrIncrement(code, quantity, source);
     }
 
+    function parseImportText(text) {
+      const lines = String(text || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+      let added = 0; let errors = 0;
+      for (const line of lines) {
+        const parts = line.split(/[;\t, ]+/).filter(Boolean);
+        const code = normalizeDigits(parts[0] || '');
+        const qty = sanitizeQty(parts[1] || '1');
+        if (handleScannedCode(code, qty, 'import')) added++; else errors++;
+      }
+      toast(`${added} article(s) importé(s) — ${errors} erreur(s)`, errors > 0);
+      els.pasteZone.value = '';
+    }
+
     function changeQty(index, value) {
-      const item = state.items[index];
-      if (!item) return;
-      item.qty = sanitizeQty(value);
-      renderRows(item.code);
+      if (!state.items[index]) return;
+      state.items[index].qty = sanitizeQty(value);
+      renderRows(state.items[index].code);
       toast('Quantité modifiée');
     }
 
@@ -511,21 +380,6 @@
       focusScanInput();
     }
 
-    function parseImportText(text) {
-      const lines = String(text || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-      let added = 0;
-      let errors = 0;
-      for (const line of lines) {
-        const parts = line.split(/[;\t, ]+/).filter(Boolean);
-        const code = normalizeDigits(parts[0] || '');
-        const qty = sanitizeQty(parts[1] || '1');
-        if (handleScannedCode(code, qty, 'import')) added++;
-        else errors++;
-      }
-      toast(`${added} article(s) importé(s) — ${errors} erreur(s)`, errors > 0);
-      els.pasteZone.value = '';
-    }
-
     function exportCsv() {
       const customerCode = normalizeDigits(els.customerCode.value).slice(0, 6);
       if (!isValidCustomerCode(customerCode)) {
@@ -541,7 +395,7 @@
       const rows = [];
       rows.push(['CODE_CLIENT_FOURNISSEUR', customerCode]);
       rows.push(['DELAI', deliveryDate]);
-      rows.push(['TYPE', state.type]);
+      rows.push(['TYPE', 'COMMANDE']);
       rows.push([]);
       rows.push(['CODE', 'QTE']);
       state.items.forEach(item => rows.push([item.code, String(sanitizeQty(item.qty))]));
@@ -550,101 +404,103 @@
       const filename = `COMMANDE_${customerCode}_${yyyymmdd}.csv`;
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const file = new File([blob], filename, { type: 'text/csv;charset=utf-8' });
-
-      const doDownload = () => {
+      const download = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 800);
       };
-
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         navigator.share({ files: [file], title: filename, text: 'Export commande' }).then(() => {
           toast(`✓ Fichier exporté — ${state.items.length} lignes`);
-        }).catch(() => {
-          doDownload();
-          toast(`✓ Fichier exporté — ${state.items.length} lignes`);
-        });
+        }).catch(() => { download(); toast(`✓ Fichier exporté — ${state.items.length} lignes`); });
       } else {
-        doDownload();
-        toast(`✓ Fichier exporté — ${state.items.length} lignes`);
+        download(); toast(`✓ Fichier exporté — ${state.items.length} lignes`);
       }
     }
 
-    async function ensureStrichInitialized() {
-      if (state.strichInitialized) return true;
-      let licenseKey = localStorage.getItem(STRICH_KEY_STORAGE) || '';
-      if (!licenseKey) {
-        licenseKey = window.prompt('Entrez votre clé de licence STRICH (trial ou prod) :', '') || '';
-        if (!licenseKey.trim()) {
-          toast('Clé STRICH requise pour le scan caméra', true);
-          return false;
-        }
-        localStorage.setItem(STRICH_KEY_STORAGE, licenseKey.trim());
-      }
-      try {
-        await StrichSDK.initialize(licenseKey.trim());
-        state.strichInitialized = true;
-        return true;
-      } catch (error) {
-        console.error(error);
-        localStorage.removeItem(STRICH_KEY_STORAGE);
-        toast('Initialisation STRICH impossible — vérifiez la clé licence', true);
-        return false;
-      }
+    function recentDuplicate(code) {
+      const now = Date.now();
+      return state.lastDetectedCode === code && now - state.lastDetectedAt < 1200;
     }
 
-    function createScannerConfig() {
+    function markDetected(code) {
+      state.lastDetectedCode = code;
+      state.lastDetectedAt = Date.now();
+    }
+
+    function quaggaConfig() {
       return {
-        selector: '#scanner-host',
-        engine: {
-          symbologies: [
-            { name: 'ean13' },
-            { name: 'msi-plessey', minLen: 6, maxLen: 6, checksumMode: 0 }
-          ],
-          duplicateInterval: DEFAULT_DUPLICATE_INTERVAL
-        }
+        inputStream: {
+          type: 'LiveStream',
+          target: els.scannerHost,
+          constraints: {
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            aspectRatio: { min: 1, max: 2 }
+          },
+          willReadFrequently: true
+        },
+        locator: { patchSize: 'medium', halfSample: true },
+        numOfWorkers: navigator.hardwareConcurrency ? Math.min(4, navigator.hardwareConcurrency) : 2,
+        frequency: 10,
+        decoder: {
+          readers: ['ean_reader', 'code_128_reader'],
+          multiple: false
+        },
+        locate: true
       };
     }
 
-    async function startCamera() {
-      if (state.cameraRunning) return;
-      const ok = await ensureStrichInitialized();
-      if (!ok) return;
-      setStatus('Caméra en cours de démarrage…', 'busy');
-      els.btnCameraStart.disabled = true;
-      try {
-        const reader = await new BarcodeReader(createScannerConfig()).initialize();
-        reader.detected = (detections) => {
-          if (!Array.isArray(detections)) return;
-          for (const det of detections) {
-            const code = normalizeDigits(det?.data ?? det?.value ?? '');
-            if (handleScannedCode(code, els.qtyInput.value, 'camera')) {
-              break;
-            }
-          }
-        };
-        await reader.start();
-        state.barcodeReader = reader;
-        state.cameraRunning = true;
-        els.btnCameraStop.disabled = false;
-        setStatus('Caméra active', 'busy');
-        toast('Caméra démarrée');
-      } catch (error) {
-        console.error(error);
-        els.btnCameraStart.disabled = false;
-        els.btnCameraStop.disabled = true;
-        setStatus('Erreur caméra', 'error');
-        toast('Impossible de démarrer la caméra — HTTPS et autorisation requis', true);
+    function attachVideoAttributes() {
+      const video = els.scannerHost.querySelector('video');
+      if (video) {
+        video.setAttribute('autoplay', 'true');
+        video.setAttribute('muted', 'true');
+        video.setAttribute('playsinline', 'true');
+        video.muted = true;
       }
     }
 
-    async function stopCamera() {
-      if (!state.barcodeReader) {
+    function startCamera() {
+      if (state.cameraRunning) return;
+      if (!window.Quagga) {
+        toast('Bibliothèque de scan indisponible', true);
+        return;
+      }
+      setStatus('Caméra en cours de démarrage…', 'busy');
+      els.btnCameraStart.disabled = true;
+      state.onDetected = (result) => {
+        const code = normalizeDigits(result && result.codeResult && result.codeResult.code || '');
+        if (!code || recentDuplicate(code)) return;
+        if (handleScannedCode(code, els.qtyInput.value, 'camera')) {
+          markDetected(code);
+        }
+      };
+      state.onProcessed = () => attachVideoAttributes();
+      Quagga.init(quaggaConfig(), function(err) {
+        if (err) {
+          console.error(err);
+          els.btnCameraStart.disabled = false;
+          els.btnCameraStop.disabled = true;
+          setStatus('Erreur caméra', 'error');
+          toast('Impossible de démarrer la caméra — HTTPS et autorisation requis', true);
+          return;
+        }
+        Quagga.onDetected(state.onDetected);
+        Quagga.onProcessed(state.onProcessed);
+        Quagga.start();
+        state.cameraRunning = true;
+        els.btnCameraStop.disabled = false;
+        setStatus('Caméra active', 'busy');
+        attachVideoAttributes();
+        toast('Caméra démarrée');
+      });
+    }
+
+    function stopCamera() {
+      if (!window.Quagga || !state.cameraRunning) {
         state.cameraRunning = false;
         els.btnCameraStart.disabled = false;
         els.btnCameraStop.disabled = true;
@@ -652,12 +508,14 @@
         return;
       }
       try {
-        await state.barcodeReader.destroy();
-      } catch (error) {
-        console.warn(error);
-      }
-      state.barcodeReader = null;
+        if (state.onDetected) Quagga.offDetected(state.onDetected);
+        if (state.onProcessed) Quagga.offProcessed(state.onProcessed);
+      } catch (_) {}
+      try { Quagga.stop(); } catch (_) {}
+      els.scannerHost.innerHTML = '';
       state.cameraRunning = false;
+      state.onDetected = null;
+      state.onProcessed = null;
       els.btnCameraStart.disabled = false;
       els.btnCameraStop.disabled = true;
       setStatus('Prêt à scanner', 'ok');
@@ -665,25 +523,11 @@
       focusScanInput();
     }
 
-    function initDefaultDate() {
-      if (!els.deliveryDate.value) els.deliveryDate.value = todayPlus(2);
-    }
-
     function bindEvents() {
-      els.customerCode.addEventListener('input', () => {
-        els.customerCode.value = normalizeDigits(els.customerCode.value).slice(0, 6);
-        saveState();
-      });
+      els.customerCode.addEventListener('input', () => { els.customerCode.value = normalizeDigits(els.customerCode.value).slice(0, 6); saveState(); });
       els.deliveryDate.addEventListener('change', saveState);
-      els.qtyInput.addEventListener('change', () => {
-        els.qtyInput.value = String(sanitizeQty(els.qtyInput.value));
-      });
-      els.scanInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-          event.preventDefault();
-          handleScannedCode(els.scanInput.value, els.qtyInput.value, 'input');
-        }
-      });
+      els.qtyInput.addEventListener('change', () => { els.qtyInput.value = String(sanitizeQty(els.qtyInput.value)); });
+      els.scanInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); handleScannedCode(els.scanInput.value, els.qtyInput.value, 'input'); } });
       els.btnAdd.addEventListener('click', () => handleScannedCode(els.scanInput.value, els.qtyInput.value, 'manual'));
       els.btnImport.addEventListener('click', () => parseImportText(els.pasteZone.value));
       els.btnClearPaste.addEventListener('click', () => { els.pasteZone.value = ''; focusScanInput(); });
@@ -691,39 +535,29 @@
       els.btnClearAll.addEventListener('click', () => clearAllRows(false));
       els.btnCameraStart.addEventListener('click', startCamera);
       els.btnCameraStop.addEventListener('click', stopCamera);
-      window.addEventListener('scan:code', (event) => {
-        const code = event?.detail?.code || '';
-        handleScannedCode(code, els.qtyInput.value, 'event');
-      });
       document.addEventListener('keydown', (event) => {
         if (state.cameraRunning) return;
         const active = document.activeElement;
         const isEditable = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
-        if (!isEditable && !event.metaKey && !event.ctrlKey && !event.altKey) {
-          focusScanInput();
-        }
+        if (!isEditable && !event.metaKey && !event.ctrlKey && !event.altKey) focusScanInput();
       });
-      window.addEventListener('beforeunload', () => { if (state.barcodeReader) state.barcodeReader.destroy().catch(() => {}); });
+      window.addEventListener('beforeunload', () => stopCamera());
     }
 
-    async function registerPWA() {
+    function registerPWA() {
       if (!('serviceWorker' in navigator)) return;
-      try {
-        await navigator.serviceWorker.register('./sw.js');
-      } catch (error) {
-        console.warn('SW registration failed', error);
-      }
+      navigator.serviceWorker.register('./sw_free.js').catch(err => console.warn('SW registration failed', err));
     }
 
     function boot() {
-      initDefaultDate();
+      if (!els.deliveryDate.value) els.deliveryDate.value = todayPlus(2);
       loadState();
-      initDefaultDate();
+      if (!els.deliveryDate.value) els.deliveryDate.value = todayPlus(2);
       renderRows();
       bindEvents();
+      registerPWA();
       focusScanInput();
       setStatus('Prêt à scanner', 'ok');
-      registerPWA();
     }
 
     boot();
