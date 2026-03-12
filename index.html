@@ -60,10 +60,13 @@
     .table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;max-height:520px;background:#0d1320}
     table{width:100%;border-collapse:separate;border-spacing:0} thead th{position:sticky;top:0;background:#101726;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:12px;padding:12px;border-bottom:1px solid var(--line);text-align:left;z-index:2} tbody td{padding:12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle} tbody tr.new-row{animation:newrow .32s ease}@keyframes newrow{0%{background:rgba(0,224,164,.14)}100%{background:transparent}} .td-num{width:58px;color:var(--muted)} .td-code{min-width:180px} .td-qty{width:118px} .qty-edit{width:86px;min-height:40px;padding:8px 10px;border-radius:10px}.btn-del{appearance:none;border:1px solid #5a2c34;background:#301a1f;color:#ffd7d7;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:800}.empty{padding:30px 16px;text-align:center;color:var(--muted)} .empty-title{font-weight:800;color:#dce6ff;margin-top:8px}
 
+    .bottom-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .bottom-actions .btn{width:100%;min-width:0}
+
     .toast{position:fixed;left:50%;bottom:calc(var(--safe-bottom) + 16px);transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#132030;border:1px solid var(--line);color:var(--text);padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);transition:opacity .2s ease, transform .2s ease;z-index:9999;max-width:min(92vw,460px)}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)} .toast.warn{border-color:#7b4040;background:#2a1d22;color:#ffe1e1} .hidden{display:none !important}
 
-    @media (max-width:560px){body{padding-left:10px;padding-right:10px}.header{align-items:flex-start;flex-direction:column}.status{align-self:stretch;justify-content:center}.card-head,.card-body{padding:12px}.field-grid,.scan-row{grid-template-columns:1fr}.bottom-actions .btn{flex:1 1 140px}}
+    @media (max-width:560px){body{padding-left:10px;padding-right:10px}.header{align-items:flex-start;flex-direction:column}.status{align-self:stretch;justify-content:center}.card-head,.card-body{padding:12px}.field-grid,.scan-row,.bottom-actions{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -118,7 +121,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    const STORAGE_KEY='segurel-order-state-sans-camera-v1';
+    const STORAGE_KEY='segurel-order-state-sans-camera-v2';
     const state={items:[]};
     const els={headerStatus:document.getElementById('header-status'),customerCode:document.getElementById('customer-code'),deliveryDate:document.getElementById('delivery-date'),scanInput:document.getElementById('scan-input'),scanPlaceholder:document.getElementById('scan-placeholder'),btnAdd:document.getElementById('btn-add'),btnExport:document.getElementById('btn-export'),btnClearAll:document.getElementById('btn-clear-all'),tableInfo:document.getElementById('table-info'),rowsBody:document.getElementById('rows-body'),emptyState:document.getElementById('empty-state'),statLines:document.getElementById('stat-lines'),statQty:document.getElementById('stat-qty'),toast:document.getElementById('toast'),clearModal:document.getElementById('clear-modal'),btnConfirmClear:document.getElementById('btn-confirm-clear'),btnCancelClear:document.getElementById('btn-cancel-clear')};
 
@@ -147,7 +150,45 @@
     function closeClearModal(){els.clearModal.classList.add('hidden')}
     function confirmClearAll(){state.items=[];renderRows();closeClearModal();toast('Toutes les lignes ont été supprimées',true);focusScanInput()}
 
-    function exportCsv(){const customerCode=normalizeDigits(els.customerCode.value).slice(0,6);if(!isValidCustomerCode(customerCode)){toast('Le code client doit contenir exactement 6 chiffres',true);els.customerCode.focus();return}if(!state.items.length){toast('Aucune ligne à exporter',true);return}const deliveryDate=els.deliveryDate.value||todayPlus(2);const rows=[];rows.push(['CODE_CLIENT_FOURNISSEUR',customerCode]);rows.push(['DELAI',deliveryDate]);rows.push(['TYPE','COMMANDE']);rows.push([]);rows.push(['CODE','QTE']);state.items.forEach(item=>rows.push([item.code,String(Math.max(1,parseInt(item.qty,10)||1))]));const csv='\uFEFF'+rows.map(r=>r.join(';')).join('\r\n');const yyyymmdd=deliveryDate.replace(/-/g,'');const filename=`COMMANDE_${customerCode}_${yyyymmdd}.csv`;const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),800);toast(`✓ Fichier exporté — ${state.items.length} lignes`)}
+    async function exportCsv(){
+      const customerCode=normalizeDigits(els.customerCode.value).slice(0,6);
+      if(!isValidCustomerCode(customerCode)){toast('Le code client doit contenir exactement 6 chiffres',true);els.customerCode.focus();return}
+      if(!state.items.length){toast('Aucune ligne à exporter',true);return}
+      const deliveryDate=els.deliveryDate.value||todayPlus(2);
+      const rows=[];
+      rows.push(['CODE_CLIENT_FOURNISSEUR',customerCode]);
+      rows.push(['DELAI',deliveryDate]);
+      rows.push(['TYPE','COMMANDE']);
+      rows.push([]);
+      rows.push(['CODE','QTE']);
+      state.items.forEach(item=>rows.push([item.code,String(Math.max(1,parseInt(item.qty,10)||1))]));
+      const csv='\uFEFF'+rows.map(r=>r.join(';')).join('\r\n');
+      const yyyymmdd=deliveryDate.replace(/-/g,'');
+      const filename=`COMMANDE_${customerCode}_${yyyymmdd}.csv`;
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+      const file=new File([blob], filename, {type:'text/csv;charset=utf-8'});
+      const fallbackDownload=()=>{
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),800);
+      };
+      try{
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:filename, text:'Export commande'});
+          toast(`✓ Fichier exporté — ${state.items.length} lignes`);
+          return;
+        }
+      }catch(err){
+        // si annulation du partage, on ne télécharge pas automatiquement
+        if(err && (String(err.name)==='AbortError' || String(err.message||'').toLowerCase().includes('abort'))){
+          toast('Partage annulé', true);
+          return;
+        }
+      }
+      fallbackDownload();
+      toast(`✓ Fichier exporté — ${state.items.length} lignes`);
+    }
 
     function bindEvents(){
       els.customerCode.addEventListener('input',()=>{els.customerCode.value=normalizeDigits(els.customerCode.value).slice(0,6);saveState()});
