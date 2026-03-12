@@ -1,7 +1,7 @@
 {
   "name": "Segurel Commande",
   "short_name": "Segurel",
-  "description": "Commande mobile avec scan caméra limité au cadre vert et validation manuelle après détection",
+  "description": "Commande mobile avec saisie scanner Bluetooth ou manuelle",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f1117",
