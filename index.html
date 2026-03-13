@@ -324,7 +324,17 @@
       const filename=('COMMANDE_'+customerCode+'_'+yyyymmdd)+'.csv';
       const blob=new Blob([csv], {type:'text/csv;charset=utf-8'});
       const file=new File([blob], filename, {type:'text/csv;charset=utf-8'});
-      // Toujours afficher la share sheet maison
+      // iOS / Android : feuille de partage native directement
+      try{
+        if(navigator.canShare && navigator.canShare({files:[file]})){
+          await navigator.share({files:[file], title:filename, text:'Export commande'});
+          toast(`✓ Fichier partagé — ${state.items.length} lignes`);
+          return;
+        }
+      }catch(err){
+        if(err && (String(err.name)==='AbortError' || String(err.message||'').toLowerCase().includes('abort'))){ toast('Partage annulé', true); return; }
+      }
+      // Desktop (Windows…) : share sheet maison
       openShareModal(blob, filename, file);
     }
 
