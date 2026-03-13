@@ -393,6 +393,18 @@
           return;
         }
       });
+      // Buffer scanner : capture tous les keydown au niveau document
+      let _scanBuffer = '';
+      let _scanTimer = null;
+      function flushScanBuffer(){
+        clearTimeout(_scanTimer);
+        if(_scanBuffer){
+          els.scanInput.focus();
+          els.scanInput.value = _scanBuffer;
+          _scanBuffer = '';
+          togglePlaceholder();
+        }
+      }
       document.addEventListener('keydown', e=>{
         if(!document.getElementById('invalid-modal').classList.contains('hidden')) return;
         if(!document.getElementById('clear-modal').classList.contains('hidden')) return;
@@ -401,22 +413,21 @@
         const isOtherInput = (tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') && document.activeElement !== els.scanInput;
         if(isOtherInput) return;
         if(e.metaKey || e.ctrlKey || e.altKey) return;
-        if(e.key.length !== 1 && e.key !== 'Enter') return;
-        if(document.activeElement !== els.scanInput){
-          // Bufferiser le caractère et focus — le champ recevra les suivants directement
-          if(e.key.length === 1){
-            els.scanInput.focus();
-            // Injecter manuellement le caractère manqué
-            const pos = els.scanInput.selectionStart || els.scanInput.value.length;
-            els.scanInput.value = els.scanInput.value.slice(0, pos) + e.key + els.scanInput.value.slice(pos);
-            els.scanInput.selectionStart = els.scanInput.selectionEnd = pos + 1;
-            togglePlaceholder();
-            e.preventDefault();
-          } else {
-            els.scanInput.focus();
-          }
+        // Si le champ scan est déjà actif, laisser faire normalement
+        if(document.activeElement === els.scanInput) return;
+        // Champ scan inactif : bufferiser
+        if(e.key === 'Enter'){
+          flushScanBuffer();
+          // Laisser le keydown du scanInput gérer l'ajout
+          setTimeout(()=>{ els.scanInput.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true})); }, 30);
+          e.preventDefault();
+        } else if(e.key.length === 1){
+          _scanBuffer += e.key;
+          clearTimeout(_scanTimer);
+          _scanTimer = setTimeout(flushScanBuffer, 80);
+          e.preventDefault();
         }
-      });
+      }, true); // capture phase pour intercepter avant tout
       togglePlaceholder();
     }
 
