@@ -194,6 +194,14 @@
     </div>
   </div>
 
+  <div id="invalid-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="invalid-title">
+    <div class="modal-panel">
+      <div id="invalid-title" class="modal-title">Code invalide</div>
+      <div id="invalid-msg" class="modal-sub" style="margin-top:10px"></div>
+      <div style="margin-top:16px"><button id="btn-invalid-ok" class="btn btn-primary" style="width:100%">OK</button></div>
+    </div>
+  </div>
+
   <!-- Share sheet (toutes plateformes) -->
   <div id="share-modal" class="share-modal hidden" role="dialog" aria-modal="true" aria-label="Partager le fichier">
     <div class="share-sheet">
@@ -258,7 +266,22 @@
     function renderRows(highlightCode=''){ const frag=document.createDocumentFragment(); state.items.forEach((item,index)=>{ const tr=document.createElement('tr'); if(highlightCode && item.code===highlightCode) tr.classList.add('new-row'); tr.innerHTML=`<td class="td-num mono">${index+1}</td><td class="td-code mono">${item.code}</td><td>${item.type}</td><td class="td-qty"><input class="qty-edit mono" type="number" min="1" step="1" value="${Math.max(1,parseInt(item.qty,10)||1)}" aria-label="Quantité ${item.code}" /></td><td><button class="btn-del" type="button">Supprimer</button></td>`; tr.querySelector('.qty-edit').addEventListener('change',e=>changeQty(index,e.target.value)); tr.querySelector('.btn-del').addEventListener('click',()=>deleteRow(index)); frag.appendChild(tr); }); els.rowsBody.replaceChildren(frag); updateStats(); }
     function focusScanInput(){ els.scanInput.focus({preventScroll:false}); els.scanInput.select?.(); togglePlaceholder(); }
 
-    function addOrIncrement(code){ const normalizedCode=normalizeDigits(code); const type=detectCodeType(normalizedCode); if(!type){ toast('Code invalide — 6 ou 13 chiffres requis',true); return false; } const existing=state.items.find(item=>item.code===normalizedCode); if(existing){ existing.qty+=1; renderRows(normalizedCode); toast(`Code ${normalizedCode} → +1 (total: ${existing.qty})`); } else { state.items.push({code:normalizedCode, qty:1, type}); renderRows(normalizedCode); toast(`✓ ${normalizedCode} ×1 — ${type}`); } flashScanInput(); els.scanInput.value=''; togglePlaceholder(); focusScanInput(); return true; }
+    function showInvalidModal(code){
+      const digits = normalizeDigits(code);
+      const len = digits.length;
+      const display = digits || code;
+      document.getElementById('invalid-msg').textContent = display
+        ? `Le code "${display}" contient ${len} chiffre${len>1?'s':''} — un code valide doit contenir exactement 6 ou 13 chiffres.`
+        : 'Aucun chiffre détecté — un code valide doit contenir exactement 6 ou 13 chiffres.';
+      document.getElementById('invalid-modal').classList.remove('hidden');
+      _invalidOpenedAt = Date.now();
+    }
+    function closeInvalidModal(){
+      document.getElementById('invalid-modal').classList.add('hidden');
+      els.scanInput.value=''; togglePlaceholder(); focusScanInput();
+    }
+
+    function addOrIncrement(code){ const normalizedCode=normalizeDigits(code); const type=detectCodeType(normalizedCode); if(!type){ showInvalidModal(code); return false; } const existing=state.items.find(item=>item.code===normalizedCode); if(existing){ existing.qty+=1; renderRows(normalizedCode); toast(`Code ${normalizedCode} → +1 (total: ${existing.qty})`); } else { state.items.push({code:normalizedCode, qty:1, type}); renderRows(normalizedCode); toast(`✓ ${normalizedCode} ×1 — ${type}`); } flashScanInput(); els.scanInput.value=''; togglePlaceholder(); focusScanInput(); return true; }
     function changeQty(index,value){ const n=Math.max(1,parseInt(String(value||'').trim(),10)||1); if(!state.items[index]) return; state.items[index].qty=n; renderRows(state.items[index].code); toast('Quantité modifiée'); }
     function deleteRow(index){ if(index<0||index>=state.items.length) return; state.items.splice(index,1); renderRows(); toast('Ligne supprimée',true); focusScanInput(); }
     function clearAllRows(){ els.clearModal.classList.remove('hidden'); }
@@ -267,6 +290,7 @@
 
     // Share modal state
     let _shareBlob=null, _shareFilename=null, _shareFile=null;
+    let _invalidOpenedAt=0;
 
     function openShareModal(blob, filename, file){
       _shareBlob=blob; _shareFilename=filename; _shareFile=file;
@@ -345,12 +369,13 @@
       els.scanInput.addEventListener('focus', togglePlaceholder);
       els.scanInput.addEventListener('blur', togglePlaceholder);
       els.scanInput.addEventListener('input', togglePlaceholder);
-      els.scanInput.addEventListener('keydown',event=>{ if(event.key==='Enter'){ event.preventDefault(); addOrIncrement(els.scanInput.value); togglePlaceholder(); } });
+      els.scanInput.addEventListener('keydown',event=>{ if(event.key==='Enter'){ event.preventDefault(); event.stopPropagation(); addOrIncrement(els.scanInput.value); togglePlaceholder(); } });
       els.btnAdd.addEventListener('click',()=>{ addOrIncrement(els.scanInput.value); togglePlaceholder(); });
       els.btnExport.addEventListener('click', exportCsv);
       els.btnClearAll.addEventListener('click', clearAllRows);
       els.btnConfirmClear.addEventListener('click', confirmClearAll);
       els.btnCancelClear.addEventListener('click', closeClearModal);
+      document.getElementById('btn-invalid-ok').addEventListener('click', closeInvalidModal);
       // Share modal
       // Share modal
       document.getElementById('share-open-with').addEventListener('click',()=>{ if(_shareBlob&&_shareFilename){ doOpenWith(_shareBlob,_shareFilename); closeShareModal(); } });
@@ -361,8 +386,14 @@
       document.getElementById('share-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('share-modal')) closeShareModal(); });
       window.addEventListener('beforeunload', saveState);
       // Redirection globale clavier → champ scan (scanner Bluetooth ou clavier)
+      document.addEventListener('keyup', e=>{
+        if(!document.getElementById('invalid-modal').classList.contains('hidden')){
+          if(e.key==='Enter' && Date.now() - _invalidOpenedAt > 300){ closeInvalidModal(); }
+          return;
+        }
+      });
       document.addEventListener('keydown', e=>{
-        // Ignorer si un modal est ouvert, si on est dans un autre input/textarea, ou si c'est une touche de contrôle
+        if(!document.getElementById('invalid-modal').classList.contains('hidden')) return;
         if(!document.getElementById('clear-modal').classList.contains('hidden')) return;
         if(!document.getElementById('share-modal').classList.contains('hidden')) return;
         const tag = document.activeElement ? document.activeElement.tagName : '';
@@ -370,9 +401,7 @@
         if(isOtherInput) return;
         if(e.metaKey || e.ctrlKey || e.altKey) return;
         if(e.key.length !== 1 && e.key !== 'Enter') return;
-        if(document.activeElement !== els.scanInput){
-          els.scanInput.focus();
-        }
+        if(document.activeElement !== els.scanInput){ els.scanInput.focus(); }
       });
       togglePlaceholder();
     }
