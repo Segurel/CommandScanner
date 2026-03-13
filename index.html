@@ -60,11 +60,12 @@
     }
     input:focus, textarea:focus, select:focus{border-color:var(--accent-2); box-shadow:0 0 0 4px rgba(94,203,255,.14)}
     input[readonly]{background:#0c111a;color:#dce6ff}
+    input.invalid{border-color:var(--danger) !important; box-shadow:0 0 0 4px rgba(255,120,120,.15) !important; background:#1e0f0f !important;}
     .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.02em}
 
     .scan-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}
     .placeholder-marquee{position:relative}
-    .placeholder-ghost{position:absolute;left:14px;right:14px;top:50%;transform:translateY(-50%);overflow:hidden;pointer-events:none;color:var(--muted);white-space:nowrap;font-size:16px}
+    .placeholder-ghost{position:absolute;left:14px;right:14px;bottom:0;height:46px;display:flex;align-items:center;overflow:hidden;pointer-events:none;color:var(--muted);white-space:nowrap;font-size:16px}
     .placeholder-ghost span{display:inline-block;padding-left:100%;animation:marquee 9s linear infinite}
     @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-160%)}}
 
@@ -97,6 +98,19 @@
     .modal-panel{width:min(92vw,420px);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
     .modal-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
     .modal-sub{margin-top:6px;color:var(--muted);font-size:13px}
+
+    /* Share modal */
+    .share-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;z-index:200;padding-bottom:env(safe-area-inset-bottom,0px)}
+    .share-modal.hidden{display:none}
+    .share-sheet{background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:20px 20px 28px;width:100%;max-width:520px;box-shadow:0 -12px 40px rgba(0,0,0,.5)}
+    .share-sheet-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;text-align:center;margin-bottom:18px}
+    .share-options{display:flex;flex-direction:column;gap:10px}
+    .share-option{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);cursor:pointer;transition:background .15s;font-size:15px;font-weight:600;color:var(--text);appearance:none}
+    .share-option:active{background:rgba(255,255,255,.09)}
+    .share-option-icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:20px;flex-shrink:0}
+    .share-option-icon.mail{background:linear-gradient(135deg,#0a84ff,#0055d4)}
+    .share-option-icon.save{background:linear-gradient(135deg,#30d158,#1a8c3c)}
+    .share-cancel{margin-top:10px;width:100%;padding:14px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:15px;cursor:pointer;appearance:none}
 
     .toast{position:fixed;left:50%;bottom:calc(var(--safe-bottom)+16px);transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#132030;border:1px solid var(--line);color:var(--text);padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);transition:opacity .2s ease, transform .2s ease;z-index:9999;max-width:min(92vw,460px)}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -146,7 +160,7 @@
             <div class="field placeholder-marquee">
               <label for="scan-input">Code article</label>
               <input id="scan-input" class="mono" type="text" inputmode="numeric" autocomplete="off" placeholder="" />
-              <div class="placeholder-ghost" id="scan-placeholder"><span>EAN-13 ou Code interne ... • EAN-13 ou Code interne ... • EAN-13 ou Code interne ...</span></div>
+              <div class="placeholder-ghost" id="scan-placeholder"><span>EAN-13 ou Code interne</span></div>
             </div>
             <button id="btn-add" class="btn btn-primary">Ajouter</button>
           </div>
@@ -154,7 +168,7 @@
       </article>
 
       <article class="card">
-        <div class="card-head"><div><div class="card-title">3 - Articles scannés</div><div class="card-sub" id="table-info">—</div></div></div>
+        <div class="card-head"><div><div class="card-title">3 - Articles scannés</div><div class="card-sub" id="table-info"></div></div></div>
         <div class="card-body">
           <div class="table-wrap">
             <table>
@@ -175,6 +189,44 @@
       <div id="clear-title" class="modal-title">Confirmer la suppression</div>
       <div class="modal-sub" style="margin-top:10px">Voulez-vous vraiment vider toutes les lignes scannées ?</div>
       <div class="bottom-actions" style="margin-top:16px"><button id="btn-confirm-clear" class="btn btn-danger">Oui, vider</button><button id="btn-cancel-clear" class="btn btn-ghost">Annuler</button></div>
+    </div>
+  </div>
+
+  <!-- Share sheet (toutes plateformes) -->
+  <div id="share-modal" class="share-modal hidden" role="dialog" aria-modal="true" aria-label="Partager le fichier">
+    <div class="share-sheet">
+      <div class="share-sheet-title">Exporter le fichier</div>
+      <div class="share-options">
+        <button class="share-option" id="share-open-with">
+          <div class="share-option-icon" style="background:linear-gradient(135deg,#217346,#185c37);font-size:22px">📊</div>
+          <div>
+            <div>Ouvrir avec…</div>
+            <div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Excel, Numbers, ou autre application</div>
+          </div>
+        </button>
+        <button class="share-option" id="share-native" style="display:none">
+          <div class="share-option-icon" style="background:linear-gradient(135deg,#636366,#3a3a3c);font-size:22px">⬆️</div>
+          <div>
+            <div>Partager…</div>
+            <div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">AirDrop, Mail, Messages…</div>
+          </div>
+        </button>
+        <button class="share-option" id="share-via-mail">
+          <div class="share-option-icon mail">✉️</div>
+          <div>
+            <div>Envoyer par mail</div>
+            <div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Ouvre votre client mail</div>
+          </div>
+        </button>
+        <button class="share-option" id="share-download">
+          <div class="share-option-icon save">💾</div>
+          <div>
+            <div>Enregistrer le fichier</div>
+            <div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Télécharger le CSV sur cet appareil</div>
+          </div>
+        </button>
+      </div>
+      <button class="share-cancel" id="share-cancel">Annuler</button>
     </div>
   </div>
 
@@ -200,7 +252,7 @@
     function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ customerCode:normalizeDigits(els.customerCode.value).slice(0,6), deliveryDate:els.deliveryDate.value, items:state.items })); }
     function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return; try{ const parsed=JSON.parse(raw); if(parsed.customerCode) els.customerCode.value=normalizeDigits(parsed.customerCode).slice(0,6); if(parsed.deliveryDate) els.deliveryDate.value=parsed.deliveryDate; if(Array.isArray(parsed.items)){ state.items=parsed.items.map(item=>({ code:normalizeDigits(item.code), qty:Math.max(1,parseInt(item.qty,10)||1), type:detectCodeType(normalizeDigits(item.code))||item.type||'—' })).filter(item=>!!item.type); } }catch(_){} }
 
-    function updateStats(){ const lines=state.items.length; const qty=state.items.reduce((s,i)=>s+Math.max(1,parseInt(i.qty,10)||1),0); els.statLines.textContent=String(lines); els.statQty.textContent=String(qty); els.tableInfo.textContent=lines?`${lines} référence(s)`:'—'; els.emptyState.classList.toggle('hidden', lines>0); saveState(); }
+    function updateStats(){ const lines=state.items.length; const qty=state.items.reduce((s,i)=>s+Math.max(1,parseInt(i.qty,10)||1),0); els.statLines.textContent=String(lines); els.statQty.textContent=String(qty); els.tableInfo.textContent=lines?`${lines} référence(s)`:''; els.emptyState.classList.toggle('hidden', lines>0); saveState(); }
     function renderRows(highlightCode=''){ const frag=document.createDocumentFragment(); state.items.forEach((item,index)=>{ const tr=document.createElement('tr'); if(highlightCode && item.code===highlightCode) tr.classList.add('new-row'); tr.innerHTML=`<td class="td-num mono">${index+1}</td><td class="td-code mono">${item.code}</td><td>${item.type}</td><td class="td-qty"><input class="qty-edit mono" type="number" min="1" step="1" value="${Math.max(1,parseInt(item.qty,10)||1)}" aria-label="Quantité ${item.code}" /></td><td><button class="btn-del" type="button">Supprimer</button></td>`; tr.querySelector('.qty-edit').addEventListener('change',e=>changeQty(index,e.target.value)); tr.querySelector('.btn-del').addEventListener('click',()=>deleteRow(index)); frag.appendChild(tr); }); els.rowsBody.replaceChildren(frag); updateStats(); }
     function focusScanInput(){ els.scanInput.focus({preventScroll:false}); els.scanInput.select?.(); togglePlaceholder(); }
 
@@ -210,6 +262,49 @@
     function clearAllRows(){ els.clearModal.classList.remove('hidden'); }
     function closeClearModal(){ els.clearModal.classList.add('hidden'); }
     function confirmClearAll(){ state.items=[]; renderRows(); closeClearModal(); toast('Toutes les lignes ont été supprimées',true); focusScanInput(); }
+
+    // Share modal state
+    let _shareBlob=null, _shareFilename=null, _shareFile=null;
+
+    function openShareModal(blob, filename, file){
+      _shareBlob=blob; _shareFilename=filename; _shareFile=file;
+      // Afficher le bouton "Partager…" natif seulement si canShare est dispo
+      const nativeBtn=document.getElementById('share-native');
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        nativeBtn.style.display='flex';
+      } else {
+        nativeBtn.style.display='none';
+      }
+      document.getElementById('share-modal').classList.remove('hidden');
+    }
+    function closeShareModal(){
+      document.getElementById('share-modal').classList.add('hidden');
+      _shareBlob=null; _shareFilename=null; _shareFile=null;
+    }
+    function doDownload(blob, filename){
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),800);
+    }
+    // "Ouvrir avec" : lien sans attribut download → iOS propose "Ouvrir avec Excel/Numbers…"
+    function doOpenWith(blob, filename){
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      // Pas de a.download → iOS affiche "Ouvrir avec…" au lieu de télécharger
+      a.target='_blank';
+      a.rel='noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),3000);
+    }
+    function doMailto(blob, filename){
+      doDownload(blob, filename);
+      const subject=encodeURIComponent('Commande — '+filename);
+      const body=encodeURIComponent('Veuillez trouver ci-joint le fichier de commande : '+filename);
+      window.location.href=`mailto:?subject=${subject}&body=${body}`;
+    }
 
     async function exportCsv(){
       const customerCode=normalizeDigits(els.customerCode.value).slice(0,6);
@@ -227,22 +322,12 @@
       const filename=('COMMANDE_'+customerCode+'_'+yyyymmdd)+'.csv';
       const blob=new Blob([csv], {type:'text/csv;charset=utf-8'});
       const file=new File([blob], filename, {type:'text/csv;charset=utf-8'});
-      const fallbackDownload=()=>{ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),800); };
-      try{
-        if(navigator.canShare && navigator.canShare({files:[file]})){
-          await navigator.share({files:[file], title:filename, text:'Export commande'});
-          toast(`✓ Fichier exporté — ${state.items.length} lignes`);
-          return;
-        }
-      }catch(err){
-        if(err && (String(err.name)==='AbortError' || String(err.message||'').toLowerCase().includes('abort'))){ toast('Partage annulé', true); return; }
-      }
-      fallbackDownload();
-      toast(`✓ Fichier exporté — ${state.items.length} lignes`);
+      // Toujours afficher la share sheet maison
+      openShareModal(blob, filename, file);
     }
 
     function bindEvents(){
-      els.customerCode.addEventListener('input',()=>{ els.customerCode.value=normalizeDigits(els.customerCode.value).slice(0,6); saveState(); });
+      els.customerCode.addEventListener('input',()=>{ els.customerCode.value=normalizeDigits(els.customerCode.value).slice(0,6); const v=els.customerCode.value; if(v.length>0 && v.length<6){ els.customerCode.classList.add('invalid'); } else { els.customerCode.classList.remove('invalid'); } saveState(); });
       els.customerCode.addEventListener('blur',()=>{ if(els.customerCode.value && normalizeDigits(els.customerCode.value).length!==6){ toast('Le code client doit contenir exactement 6 chiffres',true); } });
       els.deliveryDate.addEventListener('change', saveState);
       els.scanInput.addEventListener('focus', togglePlaceholder);
@@ -254,6 +339,14 @@
       els.btnClearAll.addEventListener('click', clearAllRows);
       els.btnConfirmClear.addEventListener('click', confirmClearAll);
       els.btnCancelClear.addEventListener('click', closeClearModal);
+      // Share modal
+      // Share modal
+      document.getElementById('share-open-with').addEventListener('click',()=>{ if(_shareBlob&&_shareFilename){ doOpenWith(_shareBlob,_shareFilename); closeShareModal(); } });
+      document.getElementById('share-native').addEventListener('click',async()=>{ if(_shareFile){ try{ await navigator.share({files:[_shareFile],title:_shareFilename,text:'Export commande'}); toast(`✓ Fichier partagé`); closeShareModal(); }catch(err){ if(err&&(String(err.name)==='AbortError'||String(err.message||'').toLowerCase().includes('abort'))){ toast('Partage annulé',true); } closeShareModal(); } } });
+      document.getElementById('share-via-mail').addEventListener('click',()=>{ if(_shareBlob&&_shareFilename){ doMailto(_shareBlob,_shareFilename); toast(`✓ Mail ouvert`); closeShareModal(); } });
+      document.getElementById('share-download').addEventListener('click',()=>{ if(_shareBlob&&_shareFilename){ doDownload(_shareBlob,_shareFilename); toast(`✓ Fichier enregistré`); closeShareModal(); } });
+      document.getElementById('share-cancel').addEventListener('click', closeShareModal);
+      document.getElementById('share-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('share-modal')) closeShareModal(); });
       window.addEventListener('beforeunload', saveState);
       togglePlaceholder();
     }
