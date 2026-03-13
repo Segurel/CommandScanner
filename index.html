@@ -402,7 +402,20 @@
         if(isOtherInput) return;
         if(e.metaKey || e.ctrlKey || e.altKey) return;
         if(e.key.length !== 1 && e.key !== 'Enter') return;
-        if(document.activeElement !== els.scanInput){ els.scanInput.focus(); }
+        if(document.activeElement !== els.scanInput){
+          // Bufferiser le caractère et focus — le champ recevra les suivants directement
+          if(e.key.length === 1){
+            els.scanInput.focus();
+            // Injecter manuellement le caractère manqué
+            const pos = els.scanInput.selectionStart || els.scanInput.value.length;
+            els.scanInput.value = els.scanInput.value.slice(0, pos) + e.key + els.scanInput.value.slice(pos);
+            els.scanInput.selectionStart = els.scanInput.selectionEnd = pos + 1;
+            togglePlaceholder();
+            e.preventDefault();
+          } else {
+            els.scanInput.focus();
+          }
+        }
       });
       togglePlaceholder();
     }
