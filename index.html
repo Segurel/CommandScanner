@@ -235,6 +235,14 @@
     </div>
   </div>
 
+  <div id="back-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-panel">
+      <div class="modal-title">Modifier l'en-tête</div>
+      <div class="modal-sub" style="margin-top:10px">Vous avez des articles scannés. Modifier l'en-tête ne les supprimera pas, mais vérifiez que le code client et la date restent corrects.</div>
+      <div class="bottom-actions" style="margin-top:16px"><button id="btn-confirm-back" class="btn btn-secondary">Continuer</button><button id="btn-cancel-back" class="btn btn-ghost">Annuler</button></div>
+    </div>
+  </div>
+
   <div id="invalid-modal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-panel">
       <div class="modal-title">Code invalide</div>
@@ -337,12 +345,12 @@
     function loadState(){const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;try{const p=JSON.parse(raw);if(p.customerCode)els.customerCode.value=normalizeDigits(p.customerCode).slice(0,6);if(p.deliveryDate)els.deliveryDate.value=p.deliveryDate;if(Array.isArray(p.items)){state.items=p.items.map(item=>({code:normalizeDigits(item.code),qty:Math.max(1,parseInt(item.qty,10)||1),type:detectCodeType(normalizeDigits(item.code))||item.type||'—'})).filter(item=>!!item.type);}}catch(_){}}
 
     // ── Table ──
-    function updateStats(){const lines=state.items.length;const qty=state.items.reduce((s,i)=>s+Math.max(1,parseInt(i.qty,10)||1),0);els.statLines.textContent=String(lines);els.statQty.textContent=String(qty);els.tableInfo.textContent=lines?`${lines} référence(s)`:'';els.emptyState.classList.toggle('hidden',lines>0);saveState();}
+    function updateStats(){const lines=state.items.length;const qty=state.items.reduce((s,i)=>s+Math.max(1,parseInt(i.qty,10)||1),0);els.statLines.textContent=String(lines);els.statQty.textContent=String(qty);els.tableInfo.textContent=lines?`${lines} référence(s)`:'';els.emptyState.classList.toggle('hidden',lines>0);els.btnExport.disabled=lines===0;els.btnClearAll.disabled=lines===0;saveState();}
     function renderRows(highlightCode=''){const frag=document.createDocumentFragment();state.items.forEach((item,index)=>{const tr=document.createElement('tr');if(highlightCode&&item.code===highlightCode)tr.classList.add('new-row');tr.innerHTML=`<td class="td-num mono">${index+1}</td><td class="td-code mono">${item.code}</td><td>${item.type}</td><td class="td-qty"><input class="qty-edit mono" type="number" min="1" step="1" value="${Math.max(1,parseInt(item.qty,10)||1)}" aria-label="Quantité ${item.code}" /></td><td><button class="btn-del" type="button">Supprimer</button></td>`;tr.querySelector('.qty-edit').addEventListener('change',e=>changeQty(index,e.target.value));tr.querySelector('.btn-del').addEventListener('click',()=>deleteRow(index));frag.appendChild(tr);});els.rowsBody.replaceChildren(frag);updateStats();}
 
     // ── Focus scan ──
     function focusScanInput(){els.scanInput.focus({preventScroll:false});els.scanInput.select?.();togglePlaceholder();}
-    function isModalOpen(){return!document.getElementById('invalid-modal').classList.contains('hidden')||!document.getElementById('clear-modal').classList.contains('hidden')||!document.getElementById('share-modal').classList.contains('hidden');}
+    function isModalOpen(){return!document.getElementById('invalid-modal').classList.contains('hidden')||!document.getElementById('clear-modal').classList.contains('hidden')||!document.getElementById('back-modal').classList.contains('hidden')||!document.getElementById('share-modal').classList.contains('hidden');}
     function shouldKeepScanFocus(){
       if(!els.pageScan.classList.contains('active'))return false;
       if(isModalOpen())return false;
@@ -406,7 +414,12 @@
     function bindEvents(){
       // Page 1
       els.btnStart.addEventListener('click',goToScan);
-      els.btnBack.addEventListener('click',()=>showPage('header'));
+      els.btnBack.addEventListener('click',()=>{
+        if(state.items.length>0){ document.getElementById('back-modal').classList.remove('hidden'); }
+        else { showPage('header'); }
+      });
+      document.getElementById('btn-confirm-back').addEventListener('click',()=>{ document.getElementById('back-modal').classList.add('hidden'); showPage('header'); });
+      document.getElementById('btn-cancel-back').addEventListener('click',()=>{ document.getElementById('back-modal').classList.add('hidden'); });
       els.customerCode.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();els.deliveryDate.focus();}});
       els.deliveryDate.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();goToScan();}});
       els.customerCode.addEventListener('input',()=>{els.customerCode.value=normalizeDigits(els.customerCode.value).slice(0,6);const v=els.customerCode.value;els.customerCode.classList.toggle('invalid',v.length>0&&v.length<6);saveState();});
