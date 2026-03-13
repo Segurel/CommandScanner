@@ -267,6 +267,22 @@
     function renderRows(highlightCode=''){ const frag=document.createDocumentFragment(); state.items.forEach((item,index)=>{ const tr=document.createElement('tr'); if(highlightCode && item.code===highlightCode) tr.classList.add('new-row'); tr.innerHTML=`<td class="td-num mono">${index+1}</td><td class="td-code mono">${item.code}</td><td>${item.type}</td><td class="td-qty"><input class="qty-edit mono" type="number" min="1" step="1" value="${Math.max(1,parseInt(item.qty,10)||1)}" aria-label="Quantité ${item.code}" /></td><td><button class="btn-del" type="button">Supprimer</button></td>`; tr.querySelector('.qty-edit').addEventListener('change',e=>changeQty(index,e.target.value)); tr.querySelector('.btn-del').addEventListener('click',()=>deleteRow(index)); frag.appendChild(tr); }); els.rowsBody.replaceChildren(frag); updateStats(); }
     function focusScanInput(){ els.scanInput.focus({preventScroll:false}); els.scanInput.select?.(); togglePlaceholder(); }
 
+    // Maintien du focus sur le champ scan (iOS + desktop)
+    function shouldKeepScanFocus(){
+      if(!document.getElementById('invalid-modal').classList.contains('hidden')) return false;
+      if(!document.getElementById('clear-modal').classList.contains('hidden')) return false;
+      if(!document.getElementById('share-modal').classList.contains('hidden')) return false;
+      const tag = document.activeElement ? document.activeElement.tagName : '';
+      const isOtherInput = (tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') && document.activeElement !== els.scanInput;
+      if(isOtherInput) return false;
+      return true;
+    }
+    els.scanInput.addEventListener('blur', ()=>{
+      setTimeout(()=>{
+        if(shouldKeepScanFocus()) els.scanInput.focus({preventScroll:true});
+      }, 50);
+    });
+
     function showInvalidModal(code){
       const digits = normalizeDigits(code);
       const len = digits.length;
