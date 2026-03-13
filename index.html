@@ -360,6 +360,20 @@
       document.getElementById('share-cancel').addEventListener('click', closeShareModal);
       document.getElementById('share-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('share-modal')) closeShareModal(); });
       window.addEventListener('beforeunload', saveState);
+      // Redirection globale clavier → champ scan (scanner Bluetooth ou clavier)
+      document.addEventListener('keydown', e=>{
+        // Ignorer si un modal est ouvert, si on est dans un autre input/textarea, ou si c'est une touche de contrôle
+        if(!document.getElementById('clear-modal').classList.contains('hidden')) return;
+        if(!document.getElementById('share-modal').classList.contains('hidden')) return;
+        const tag = document.activeElement ? document.activeElement.tagName : '';
+        const isOtherInput = (tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') && document.activeElement !== els.scanInput;
+        if(isOtherInput) return;
+        if(e.metaKey || e.ctrlKey || e.altKey) return;
+        if(e.key.length !== 1 && e.key !== 'Enter') return;
+        if(document.activeElement !== els.scanInput){
+          els.scanInput.focus();
+        }
+      });
       togglePlaceholder();
     }
 
