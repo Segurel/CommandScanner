@@ -348,7 +348,12 @@
 
     // ── Table ──
     function updateStats(){const lines=state.items.length;const qty=state.items.reduce((s,i)=>s+Math.max(1,parseInt(i.qty,10)||1),0);els.statLines.textContent=String(lines);els.statQty.textContent=String(qty);els.tableInfo.textContent=lines?`${lines} référence(s)`:'';els.emptyState.classList.toggle('hidden',lines>0);els.btnExport.disabled=lines===0;els.btnClearAll.disabled=lines===0;saveState();}
-    function renderRows(highlightCode=''){const frag=document.createDocumentFragment();state.items.forEach((item,index)=>{const tr=document.createElement('tr');if(highlightCode&&item.code===highlightCode)tr.classList.add('new-row');tr.innerHTML=`<td class="td-num mono">${index+1}</td><td class="td-code mono">${item.code}</td><td class="td-qty"><input class="qty-edit mono" type="number" min="1" max="50" step="1" value="${Math.max(1,Math.min(50,parseInt(item.qty,10)||1))}" aria-label="Quantité ${item.code}" /></td><td><button class="btn-del" type="button">Supprimer</button></td>`;tr.querySelector('.qty-edit').addEventListener('change',e=>changeQty(index,e.target.value));tr.querySelector('.btn-del').addEventListener('click',()=>deleteRow(index));frag.appendChild(tr);});els.rowsBody.replaceChildren(frag);updateStats();}
+    function renderRows(highlightCode=''){const frag=document.createDocumentFragment();state.items.forEach((item,index)=>{const tr=document.createElement('tr');if(highlightCode&&item.code===highlightCode)tr.classList.add('new-row');tr.innerHTML=`<td class="td-num mono">${index+1}</td><td class="td-code mono">${item.code}</td><td class="td-qty"><input class="qty-edit mono" type="number" min="1" max="50" step="1" value="${Math.max(1,Math.min(50,parseInt(item.qty,10)||1))}" aria-label="Quantité ${item.code}" /></td><td><button class="btn-del" type="button">Supprimer</button></td>`;
+      const qtyInput=tr.querySelector('.qty-edit');
+      qtyInput.addEventListener('change',e=>{changeQty(index,e.target.value);});
+      qtyInput.addEventListener('blur',()=>{setTimeout(focusScanInput,80);});
+      tr.querySelector('.btn-del').addEventListener('click',()=>{deleteRow(index);});
+      frag.appendChild(tr);});els.rowsBody.replaceChildren(frag);updateStats();}
 
     // ── Focus scan ──
     function focusScanInput(){els.scanInput.focus({preventScroll:false});els.scanInput.select?.();togglePlaceholder();}
@@ -356,11 +361,18 @@
     function shouldKeepScanFocus(){
       if(!els.pageScan.classList.contains('active'))return false;
       if(isModalOpen())return false;
-      const tag=document.activeElement?document.activeElement.tagName:'';
-      if((tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')&&document.activeElement!==els.scanInput)return false;
+      const ae=document.activeElement;
+      if(!ae)return true;
+      const tag=ae.tagName;
+      // Laisser la main aux inputs quantité et boutons supprimer du tableau
+      if(ae.classList.contains('qty-edit'))return false;
+      if(ae.classList.contains('btn-del'))return false;
+      // Laisser la main à tout autre input/select/textarea sauf le champ scan lui-même
+      if((tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')&&ae!==els.scanInput)return false;
+      if(tag==='BUTTON'&&ae!==els.btnAdd&&ae!==els.btnExport&&ae!==els.btnClearAll&&ae!==els.btnBack)return false;
       return true;
     }
-    els.scanInput.addEventListener('blur',()=>{setTimeout(()=>{if(shouldKeepScanFocus())els.scanInput.focus({preventScroll:true});},50);});
+    els.scanInput.addEventListener('blur',()=>{setTimeout(()=>{if(shouldKeepScanFocus())els.scanInput.focus({preventScroll:true});},80);});
 
     // ── Modal invalide ──
     let _invalidOpenedAt=0;
