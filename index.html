@@ -55,8 +55,9 @@
     input,button,select,textarea{font:inherit}
     /* Empêche le zoom iOS Safari: 16px min partout */
     input[type=text], input[type=date], input[type=number], textarea, select{
-      width:100%; min-height:46px; border:1px solid var(--line); border-radius:12px; background:#0e1420; color:var(--text);
-      padding:12px 14px; outline:none; transition:border-color .18s, box-shadow .18s; font-size:16px; -webkit-text-size-adjust:100%;
+      width:100%; height:46px; min-height:46px; border:1px solid var(--line); border-radius:12px; background:#0e1420; color:var(--text);
+      padding:0 14px; outline:none; transition:border-color .18s, box-shadow .18s; font-size:16px; -webkit-text-size-adjust:100%;
+      -webkit-appearance:none; appearance:none;
     }
     input:focus, textarea:focus, select:focus{border-color:var(--accent-2); box-shadow:0 0 0 4px rgba(94,203,255,.14)}
     input[type=date]{text-align:left}
