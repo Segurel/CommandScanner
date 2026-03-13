@@ -24,7 +24,10 @@
     body{min-height:100vh;padding:calc(var(--safe-top) + 10px) 12px calc(var(--safe-bottom) + 20px)}
     .app{max-width:760px;margin:0 auto}
 
-    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .page{display:none}
+    .page.active{display:block}
+
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
     .brand{display:flex;align-items:center;gap:12px;min-width:0}
     .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1f2940,#0d1118);display:grid;place-items:center;box-shadow:var(--shadow);border:1px solid var(--line)}
     .logo-bars{display:flex;gap:2px;height:22px;align-items:flex-end}
@@ -53,7 +56,6 @@
     .field.full{grid-column:1/-1}
     label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
     input,button,select,textarea{font:inherit}
-    /* Empêche le zoom iOS Safari: 16px min partout */
     input[type=text], input[type=date], input[type=number], textarea, select{
       width:100%; height:46px; min-height:46px; border:1px solid var(--line); border-radius:12px; background:#0e1420; color:var(--text);
       padding:0 14px; outline:none; transition:border-color .18s, box-shadow .18s; font-size:16px; -webkit-text-size-adjust:100%;
@@ -62,6 +64,7 @@
     input:focus, textarea:focus, select:focus{border-color:var(--accent-2); box-shadow:0 0 0 4px rgba(94,203,255,.14)}
     input[type=date]{text-align:center}
     #scan-input, .qty-edit{text-align:left}
+    input[readonly]{background:#0c111a;color:#dce6ff}
     input.invalid{border-color:var(--danger) !important; box-shadow:0 0 0 4px rgba(255,120,120,.15) !important; background:#1e0f0f !important;}
     .mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.02em}
 
@@ -96,13 +99,19 @@
     .bottom-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .bottom-actions .btn{width:100%;min-width:0}
 
-    .footer-note{font-size:11px;color:var(--muted);margin-top:8px}
+    /* Résumé page 2 */
+    .summary-bar{display:flex;gap:10px;margin-bottom:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);align-items:center;flex-wrap:wrap}
+    .summary-item{display:flex;flex-direction:column;gap:2px}
+    .summary-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+    .summary-value{font-size:15px;font-weight:800;color:var(--text);font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+    .summary-sep{width:1px;background:var(--line);align-self:stretch;margin:0 4px}
+    .btn-back{display:flex;align-items:center;gap:6px;font-size:13px;margin-left:auto;padding:0 12px}
+
     .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.58);backdrop-filter:blur(2px);z-index:9998}
     .modal-panel{width:min(92vw,420px);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
     .modal-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
     .modal-sub{margin-top:6px;color:var(--muted);font-size:13px}
 
-    /* Share modal */
     .share-modal{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;z-index:200;padding-bottom:env(safe-area-inset-bottom,0px)}
     .share-modal.hidden{display:none}
     .share-sheet{background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:20px 20px 28px;width:100%;max-width:520px;box-shadow:0 -12px 40px rgba(0,0,0,.5)}
@@ -126,115 +135,134 @@
       .status{align-self:stretch;justify-content:center}
       .card-head,.card-body{padding:12px}
       .field-grid,.scan-row,.bottom-actions{grid-template-columns:1fr}
+      .summary-bar{gap:8px}
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <header class="header">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"><div class="logo-bars"><span></span><span></span><span></span><span></span><span></span></div></div>
-        <div><div class="title">Commande</div><div class="sub">Saisie scanner Bluetooth ou manuelle</div></div>
-      </div>
-      <div class="status"><span class="status-dot"></span><span id="header-status">Prêt à scanner</span></div>
-    </header>
 
-    <div class="stats">
-      <div class="stat"><div class="stat-value" id="stat-lines">0</div><div class="stat-label">Lignes</div></div>
-      <div class="stat"><div class="stat-value" id="stat-qty">0</div><div class="stat-label">Quantité</div></div>
+    <!-- PAGE 1 — En-tête -->
+    <div id="page-header" class="page active">
+      <header class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"><div class="logo-bars"><span></span><span></span><span></span><span></span><span></span></div></div>
+          <div><div class="title">Commande</div><div class="sub">Saisie scanner Bluetooth ou manuelle</div></div>
+        </div>
+        <div class="status"><span class="status-dot"></span><span>En-tête</span></div>
+      </header>
+      <div class="stack">
+        <article class="card">
+          <div class="card-head"><div class="card-title">Informations de commande</div><div class="card-sub">Renseignez les informations avant de commencer la saisie</div></div>
+          <div class="card-body">
+            <div class="field-grid">
+              <div class="field"><label for="customer-code">Code client / fournisseur</label><input id="customer-code" class="mono" type="text" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6 chiffres" autocomplete="off" /></div>
+              <div class="field"><label for="delivery-date">Délai de livraison</label><input id="delivery-date" type="date" /></div>
+              <div class="field full"><label for="order-type">Type</label><input id="order-type" type="text" value="COMMANDE" readonly /></div>
+            </div>
+            <button id="btn-start" class="btn btn-primary" style="width:100%;margin-top:18px;font-size:17px">Commencer la saisie →</button>
+          </div>
+        </article>
+      </div>
     </div>
 
-    <main class="stack">
-      <article class="card">
-        <div class="card-head"><div><div class="card-title">1 - En-tête commande</div><div class="card-sub">Informations obligatoires pour l’export</div></div></div>
-        <div class="card-body">
-          <div class="field-grid">
-            <div class="field"><label for="customer-code">Code client / fournisseur</label><input id="customer-code" class="mono" type="text" inputmode="numeric" maxlength="6" pattern="\d{6}" placeholder="6 chiffres" autocomplete="off" /></div>
-            <div class="field"><label for="delivery-date">Délai de livraison</label><input id="delivery-date" type="date" /></div>
-            <div class="field full"><label for="order-type">Type</label><input id="order-type" type="text" value="COMMANDE" readonly /></div>
-          </div>
+    <!-- PAGE 2 — Saisie -->
+    <div id="page-scan" class="page">
+      <header class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"><div class="logo-bars"><span></span><span></span><span></span><span></span><span></span></div></div>
+          <div><div class="title">Saisie articles</div><div class="sub">Scanner ou saisie manuelle</div></div>
         </div>
-      </article>
+        <div class="status"><span class="status-dot"></span><span id="header-status">Prêt à scanner</span></div>
+      </header>
 
-      <article class="card">
-        <div class="card-head"><div><div class="card-title">2 - Saisie scanner</div></div></div>
-        <div class="card-body">
-          <div class="scan-row">
-            <div class="field placeholder-marquee">
-              <label for="scan-input">Code article</label>
-              <input id="scan-input" class="mono" type="text" inputmode="numeric" autocomplete="off" placeholder="" />
-              <div class="placeholder-ghost" id="scan-placeholder"><span>EAN-13 ou Code interne</span></div>
+      <div class="summary-bar">
+        <div class="summary-item"><span class="summary-label">Client</span><span class="summary-value" id="summary-code">—</span></div>
+        <div class="summary-sep"></div>
+        <div class="summary-item"><span class="summary-label">Délai</span><span class="summary-value" id="summary-date">—</span></div>
+        <div class="summary-sep"></div>
+        <div class="summary-item"><span class="summary-label">Type</span><span class="summary-value">COMMANDE</span></div>
+        <button id="btn-back" class="btn btn-ghost btn-back">← Modifier</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-value" id="stat-lines">0</div><div class="stat-label">Lignes</div></div>
+        <div class="stat"><div class="stat-value" id="stat-qty">0</div><div class="stat-label">Quantité</div></div>
+      </div>
+
+      <div class="stack">
+        <article class="card">
+          <div class="card-head"><div class="card-title">Saisie scanner</div></div>
+          <div class="card-body">
+            <div class="scan-row">
+              <div class="field placeholder-marquee">
+                <label for="scan-input">Code article</label>
+                <input id="scan-input" class="mono" type="text" inputmode="numeric" autocomplete="off" placeholder="" />
+                <div class="placeholder-ghost" id="scan-placeholder"><span>EAN-13 ou Code interne</span></div>
+              </div>
+              <button id="btn-add" class="btn btn-primary">Ajouter</button>
             </div>
-            <button id="btn-add" class="btn btn-primary">Ajouter</button>
           </div>
-        </div>
-      </article>
+        </article>
 
-      <article class="card">
-        <div class="card-head"><div><div class="card-title">3 - Articles scannés</div><div class="card-sub" id="table-info"></div></div></div>
-        <div class="card-body">
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>Code</th><th>Type</th><th>Quantité</th><th>Action</th></tr></thead>
-              <tbody id="rows-body"></tbody>
-            </table>
-            <div id="empty-state" class="empty"><div style="font-size:32px">📦</div><div class="empty-title">Aucun article scanné</div><div>Scannez un code ou ajoutez-le manuellement.</div></div>
+        <article class="card">
+          <div class="card-head"><div><div class="card-title">Articles scannés</div><div class="card-sub" id="table-info"></div></div></div>
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>Code</th><th>Type</th><th>Quantité</th><th>Action</th></tr></thead>
+                <tbody id="rows-body"></tbody>
+              </table>
+              <div id="empty-state" class="empty"><div style="font-size:32px">📦</div><div class="empty-title">Aucun article scanné</div><div>Scannez un code ou ajoutez-le manuellement.</div></div>
+            </div>
+            <div class="bottom-actions" style="margin-top:14px">
+              <button id="btn-export" class="btn btn-blue">Exporter CSV</button>
+              <button id="btn-clear-all" class="btn btn-danger">Vider</button>
+            </div>
           </div>
-          <div class="bottom-actions" style="margin-top:14px"><button id="btn-export" class="btn btn-blue">Exporter CSV</button><button id="btn-clear-all" class="btn btn-danger">Vider</button></div>
+        </article>
+      </div>
+    </div>
 
-        </div>
-      </article>
-    </main>
   </div>
 
-  <div id="clear-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="clear-title">
+  <!-- Modals -->
+  <div id="clear-modal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-panel">
-      <div id="clear-title" class="modal-title">Confirmer la suppression</div>
+      <div class="modal-title">Confirmer la suppression</div>
       <div class="modal-sub" style="margin-top:10px">Voulez-vous vraiment vider toutes les lignes scannées ?</div>
       <div class="bottom-actions" style="margin-top:16px"><button id="btn-confirm-clear" class="btn btn-danger">Oui, vider</button><button id="btn-cancel-clear" class="btn btn-ghost">Annuler</button></div>
     </div>
   </div>
 
-  <div id="invalid-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="invalid-title">
+  <div id="invalid-modal" class="modal hidden" role="dialog" aria-modal="true">
     <div class="modal-panel">
-      <div id="invalid-title" class="modal-title">Code invalide</div>
+      <div class="modal-title">Code invalide</div>
       <div id="invalid-msg" class="modal-sub" style="margin-top:10px"></div>
       <div style="margin-top:16px"><button id="btn-invalid-ok" class="btn btn-primary" style="width:100%">OK</button></div>
     </div>
   </div>
 
-  <!-- Share sheet (toutes plateformes) -->
-  <div id="share-modal" class="share-modal hidden" role="dialog" aria-modal="true" aria-label="Partager le fichier">
+  <!-- Share sheet -->
+  <div id="share-modal" class="share-modal hidden" role="dialog" aria-modal="true">
     <div class="share-sheet">
       <div class="share-sheet-title">Exporter le fichier</div>
       <div class="share-options">
         <button class="share-option" id="share-open-with">
           <div class="share-option-icon" style="background:linear-gradient(135deg,#217346,#185c37);font-size:22px">📊</div>
-          <div>
-            <div>Ouvrir avec…</div>
-            <div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Excel, Numbers, ou autre application</div>
-          </div>
+          <div><div>Ouvrir avec…</div><div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Excel, Numbers, ou autre application</div></div>
         </button>
         <button class="share-option" id="share-native" style="display:none">
           <div class="share-option-icon" style="background:linear-gradient(135deg,#636366,#3a3a3c);font-size:22px">⬆️</div>
-          <div>
-            <div>Partager…</div>
-            <div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">AirDrop, Mail, Messages…</div>
-          </div>
+          <div><div>Partager…</div><div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">AirDrop, Mail, Messages…</div></div>
         </button>
         <button class="share-option" id="share-via-mail">
           <div class="share-option-icon mail">✉️</div>
-          <div>
-            <div>Envoyer par mail</div>
-            <div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Ouvre votre client mail</div>
-          </div>
+          <div><div>Envoyer par mail</div><div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Ouvre votre client mail</div></div>
         </button>
         <button class="share-option" id="share-download">
           <div class="share-option-icon save">💾</div>
-          <div>
-            <div>Enregistrer le fichier</div>
-            <div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Télécharger le CSV sur cet appareil</div>
-          </div>
+          <div><div>Enregistrer le fichier</div><div style="font-size:12px;font-weight:400;color:var(--muted);margin-top:2px">Télécharger le CSV sur cet appareil</div></div>
         </button>
       </div>
       <button class="share-cancel" id="share-cancel">Annuler</button>
@@ -244,211 +272,194 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
-    const STORAGE_KEY='segurel-order-state-sans-camera-datefr-v1';
+    const STORAGE_KEY='segurel-order-state-v2';
     const state={items:[]};
-    const els={headerStatus:document.getElementById('header-status'),customerCode:document.getElementById('customer-code'),deliveryDate:document.getElementById('delivery-date'),scanInput:document.getElementById('scan-input'),scanPlaceholder:document.getElementById('scan-placeholder'),btnAdd:document.getElementById('btn-add'),btnExport:document.getElementById('btn-export'),btnClearAll:document.getElementById('btn-clear-all'),tableInfo:document.getElementById('table-info'),rowsBody:document.getElementById('rows-body'),emptyState:document.getElementById('empty-state'),statLines:document.getElementById('stat-lines'),statQty:document.getElementById('stat-qty'),toast:document.getElementById('toast'),clearModal:document.getElementById('clear-modal'),btnConfirmClear:document.getElementById('btn-confirm-clear'),btnCancelClear:document.getElementById('btn-cancel-clear')};
+    const els={
+      headerStatus:document.getElementById('header-status'),
+      customerCode:document.getElementById('customer-code'),
+      deliveryDate:document.getElementById('delivery-date'),
+      scanInput:document.getElementById('scan-input'),
+      scanPlaceholder:document.getElementById('scan-placeholder'),
+      btnAdd:document.getElementById('btn-add'),
+      btnExport:document.getElementById('btn-export'),
+      btnClearAll:document.getElementById('btn-clear-all'),
+      tableInfo:document.getElementById('table-info'),
+      rowsBody:document.getElementById('rows-body'),
+      emptyState:document.getElementById('empty-state'),
+      statLines:document.getElementById('stat-lines'),
+      statQty:document.getElementById('stat-qty'),
+      toast:document.getElementById('toast'),
+      clearModal:document.getElementById('clear-modal'),
+      btnConfirmClear:document.getElementById('btn-confirm-clear'),
+      btnCancelClear:document.getElementById('btn-cancel-clear'),
+      btnStart:document.getElementById('btn-start'),
+      btnBack:document.getElementById('btn-back'),
+      summaryCode:document.getElementById('summary-code'),
+      summaryDate:document.getElementById('summary-date'),
+      pageHeader:document.getElementById('page-header'),
+      pageScan:document.getElementById('page-scan'),
+    };
 
     function todayPlus(days){const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
-    function formatDateFr(isoDate){ if(!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return isoDate || ''; const [y,m,d] = isoDate.split('-'); return `${d}/${m}/${y}`; }
+    function formatDateFr(isoDate){if(!isoDate||!/^\d{4}-\d{2}-\d{2}$/.test(isoDate))return isoDate||'';const[y,m,d]=isoDate.split('-');return`${d}/${m}/${y}`;}
     function normalizeDigits(value){return String(value||'').replace(/\D+/g,'')}
-    function detectCodeType(code){ if(/^\d{13}$/.test(code)) return 'EAN‑13'; if(/^\d{6}$/.test(code)) return 'ITF'; return null; }
-    function isValidCustomerCode(code){ return /^\d{6}$/.test(normalizeDigits(code)); }
-    function setStatus(text){ els.headerStatus.textContent=text; }
+    function detectCodeType(code){if(/^\d{13}$/.test(code))return'EAN‑13';if(/^\d{6}$/.test(code))return'ITF';return null;}
+    function isValidCustomerCode(code){return/^\d{6}$/.test(normalizeDigits(code));}
+    function setStatus(text){els.headerStatus.textContent=text;}
 
     let toastTimer=null;
-    function toast(message,warn=false){ els.toast.textContent=message; els.toast.className='toast'+(warn?' warn':'')+' show'; clearTimeout(toastTimer); toastTimer=setTimeout(()=>{els.toast.className='toast'+(warn?' warn':'')},2400); }
-    function flashScanInput(){ els.scanInput.classList.remove('scan-flash'); void els.scanInput.offsetWidth; els.scanInput.classList.add('scan-flash'); }
-    function togglePlaceholder(){ if(els.scanInput.value || document.activeElement===els.scanInput){ els.scanPlaceholder.classList.add('hidden'); } else { els.scanPlaceholder.classList.remove('hidden'); } }
+    function toast(message,warn=false){els.toast.textContent=message;els.toast.className='toast'+(warn?' warn':'')+' show';clearTimeout(toastTimer);toastTimer=setTimeout(()=>{els.toast.className='toast'+(warn?' warn':'')},2400);}
 
-    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify({ customerCode:normalizeDigits(els.customerCode.value).slice(0,6), deliveryDate:els.deliveryDate.value, items:state.items })); }
-    function loadState(){ const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return; try{ const parsed=JSON.parse(raw); if(parsed.customerCode) els.customerCode.value=normalizeDigits(parsed.customerCode).slice(0,6); if(parsed.deliveryDate) els.deliveryDate.value=parsed.deliveryDate; if(Array.isArray(parsed.items)){ state.items=parsed.items.map(item=>({ code:normalizeDigits(item.code), qty:Math.max(1,parseInt(item.qty,10)||1), type:detectCodeType(normalizeDigits(item.code))||item.type||'—' })).filter(item=>!!item.type); } }catch(_){} }
+    // ── Navigation ──
+    function showPage(page){
+      els.pageHeader.classList.toggle('active',page==='header');
+      els.pageScan.classList.toggle('active',page==='scan');
+      if(page==='scan'){updateSummary();setTimeout(focusScanInput,100);}
+      else{setTimeout(()=>els.customerCode.focus(),100);}
+    }
+    function updateSummary(){
+      els.summaryCode.textContent=normalizeDigits(els.customerCode.value).slice(0,6)||'—';
+      els.summaryDate.textContent=formatDateFr(els.deliveryDate.value)||'—';
+    }
+    function goToScan(){
+      const code=normalizeDigits(els.customerCode.value).slice(0,6);
+      if(!isValidCustomerCode(code)){toast('Le code client doit contenir exactement 6 chiffres',true);els.customerCode.focus();return;}
+      if(!els.deliveryDate.value){toast('Veuillez renseigner un délai de livraison',true);els.deliveryDate.focus();return;}
+      saveState();showPage('scan');
+    }
 
-    function updateStats(){ const lines=state.items.length; const qty=state.items.reduce((s,i)=>s+Math.max(1,parseInt(i.qty,10)||1),0); els.statLines.textContent=String(lines); els.statQty.textContent=String(qty); els.tableInfo.textContent=lines?`${lines} référence(s)`:''; els.emptyState.classList.toggle('hidden', lines>0); saveState(); }
-    function renderRows(highlightCode=''){ const frag=document.createDocumentFragment(); state.items.forEach((item,index)=>{ const tr=document.createElement('tr'); if(highlightCode && item.code===highlightCode) tr.classList.add('new-row'); tr.innerHTML=`<td class="td-num mono">${index+1}</td><td class="td-code mono">${item.code}</td><td>${item.type}</td><td class="td-qty"><input class="qty-edit mono" type="number" min="1" step="1" value="${Math.max(1,parseInt(item.qty,10)||1)}" aria-label="Quantité ${item.code}" /></td><td><button class="btn-del" type="button">Supprimer</button></td>`; tr.querySelector('.qty-edit').addEventListener('change',e=>changeQty(index,e.target.value)); tr.querySelector('.btn-del').addEventListener('click',()=>deleteRow(index)); frag.appendChild(tr); }); els.rowsBody.replaceChildren(frag); updateStats(); }
-    function focusScanInput(){ els.scanInput.focus({preventScroll:false}); els.scanInput.select?.(); togglePlaceholder(); }
+    // ── Placeholder & flash ──
+    function flashScanInput(){els.scanInput.classList.remove('scan-flash');void els.scanInput.offsetWidth;els.scanInput.classList.add('scan-flash');}
+    function togglePlaceholder(){if(els.scanInput.value||document.activeElement===els.scanInput){els.scanPlaceholder.classList.add('hidden');}else{els.scanPlaceholder.classList.remove('hidden');}}
 
-    // Maintien du focus sur le champ scan (iOS + desktop)
+    // ── Persistance ──
+    function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify({customerCode:normalizeDigits(els.customerCode.value).slice(0,6),deliveryDate:els.deliveryDate.value,items:state.items}));}
+    function loadState(){const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;try{const p=JSON.parse(raw);if(p.customerCode)els.customerCode.value=normalizeDigits(p.customerCode).slice(0,6);if(p.deliveryDate)els.deliveryDate.value=p.deliveryDate;if(Array.isArray(p.items)){state.items=p.items.map(item=>({code:normalizeDigits(item.code),qty:Math.max(1,parseInt(item.qty,10)||1),type:detectCodeType(normalizeDigits(item.code))||item.type||'—'})).filter(item=>!!item.type);}}catch(_){}}
+
+    // ── Table ──
+    function updateStats(){const lines=state.items.length;const qty=state.items.reduce((s,i)=>s+Math.max(1,parseInt(i.qty,10)||1),0);els.statLines.textContent=String(lines);els.statQty.textContent=String(qty);els.tableInfo.textContent=lines?`${lines} référence(s)`:'';els.emptyState.classList.toggle('hidden',lines>0);saveState();}
+    function renderRows(highlightCode=''){const frag=document.createDocumentFragment();state.items.forEach((item,index)=>{const tr=document.createElement('tr');if(highlightCode&&item.code===highlightCode)tr.classList.add('new-row');tr.innerHTML=`<td class="td-num mono">${index+1}</td><td class="td-code mono">${item.code}</td><td>${item.type}</td><td class="td-qty"><input class="qty-edit mono" type="number" min="1" step="1" value="${Math.max(1,parseInt(item.qty,10)||1)}" aria-label="Quantité ${item.code}" /></td><td><button class="btn-del" type="button">Supprimer</button></td>`;tr.querySelector('.qty-edit').addEventListener('change',e=>changeQty(index,e.target.value));tr.querySelector('.btn-del').addEventListener('click',()=>deleteRow(index));frag.appendChild(tr);});els.rowsBody.replaceChildren(frag);updateStats();}
+
+    // ── Focus scan ──
+    function focusScanInput(){els.scanInput.focus({preventScroll:false});els.scanInput.select?.();togglePlaceholder();}
+    function isModalOpen(){return!document.getElementById('invalid-modal').classList.contains('hidden')||!document.getElementById('clear-modal').classList.contains('hidden')||!document.getElementById('share-modal').classList.contains('hidden');}
     function shouldKeepScanFocus(){
-      if(!document.getElementById('invalid-modal').classList.contains('hidden')) return false;
-      if(!document.getElementById('clear-modal').classList.contains('hidden')) return false;
-      if(!document.getElementById('share-modal').classList.contains('hidden')) return false;
-      const tag = document.activeElement ? document.activeElement.tagName : '';
-      const isOtherInput = (tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') && document.activeElement !== els.scanInput;
-      if(isOtherInput) return false;
+      if(!els.pageScan.classList.contains('active'))return false;
+      if(isModalOpen())return false;
+      const tag=document.activeElement?document.activeElement.tagName:'';
+      if((tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')&&document.activeElement!==els.scanInput)return false;
       return true;
     }
-    els.scanInput.addEventListener('blur', ()=>{
-      setTimeout(()=>{
-        if(shouldKeepScanFocus()) els.scanInput.focus({preventScroll:true});
-      }, 50);
-    });
+    els.scanInput.addEventListener('blur',()=>{setTimeout(()=>{if(shouldKeepScanFocus())els.scanInput.focus({preventScroll:true});},50);});
 
-    function showInvalidModal(code){
-      const digits = normalizeDigits(code);
-      const len = digits.length;
-      const display = digits || code;
-      document.getElementById('invalid-msg').textContent = display
-        ? `Le code "${display}" contient ${len} chiffre${len>1?'s':''} — un code valide doit contenir exactement 6 ou 13 chiffres.`
-        : 'Aucun chiffre détecté — un code valide doit contenir exactement 6 ou 13 chiffres.';
-      document.getElementById('invalid-modal').classList.remove('hidden');
-      _invalidOpenedAt = Date.now();
-    }
-    function closeInvalidModal(){
-      document.getElementById('invalid-modal').classList.add('hidden');
-      els.scanInput.value=''; togglePlaceholder(); focusScanInput();
-    }
-
-    function addOrIncrement(code){ const normalizedCode=normalizeDigits(code); const type=detectCodeType(normalizedCode); if(!type){ showInvalidModal(code); return false; } const existing=state.items.find(item=>item.code===normalizedCode); if(existing){ existing.qty+=1; renderRows(normalizedCode); toast(`Code ${normalizedCode} → +1 (total: ${existing.qty})`); } else { state.items.push({code:normalizedCode, qty:1, type}); renderRows(normalizedCode); toast(`✓ ${normalizedCode} ×1 — ${type}`); } flashScanInput(); els.scanInput.value=''; togglePlaceholder(); focusScanInput(); return true; }
-    function changeQty(index,value){ const n=Math.max(1,parseInt(String(value||'').trim(),10)||1); if(!state.items[index]) return; state.items[index].qty=n; renderRows(state.items[index].code); toast('Quantité modifiée'); }
-    function deleteRow(index){ if(index<0||index>=state.items.length) return; state.items.splice(index,1); renderRows(); toast('Ligne supprimée',true); focusScanInput(); }
-    function clearAllRows(){ els.clearModal.classList.remove('hidden'); }
-    function closeClearModal(){ els.clearModal.classList.add('hidden'); }
-    function confirmClearAll(){ state.items=[]; renderRows(); closeClearModal(); toast('Toutes les lignes ont été supprimées',true); focusScanInput(); }
-
-    // Share modal state
-    let _shareBlob=null, _shareFilename=null, _shareFile=null;
+    // ── Modal invalide ──
     let _invalidOpenedAt=0;
+    function showInvalidModal(code){
+      const digits=normalizeDigits(code);const len=digits.length;const display=digits||code;
+      document.getElementById('invalid-msg').textContent=display?`Le code "${display}" contient ${len} chiffre${len>1?'s':''} — un code valide doit contenir exactement 6 ou 13 chiffres.`:'Aucun chiffre détecté — un code valide doit contenir exactement 6 ou 13 chiffres.';
+      document.getElementById('invalid-modal').classList.remove('hidden');
+      _invalidOpenedAt=Date.now();
+    }
+    function closeInvalidModal(){document.getElementById('invalid-modal').classList.add('hidden');els.scanInput.value='';togglePlaceholder();focusScanInput();}
 
-    function openShareModal(blob, filename, file){
-      _shareBlob=blob; _shareFilename=filename; _shareFile=file;
-      // Afficher le bouton "Partager…" natif seulement si canShare est dispo
-      const nativeBtn=document.getElementById('share-native');
-      if(navigator.canShare && navigator.canShare({files:[file]})){
-        nativeBtn.style.display='flex';
-      } else {
-        nativeBtn.style.display='none';
-      }
-      document.getElementById('share-modal').classList.remove('hidden');
-    }
-    function closeShareModal(){
-      document.getElementById('share-modal').classList.add('hidden');
-      _shareBlob=null; _shareFilename=null; _shareFile=null;
-    }
-    function doDownload(blob, filename){
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url; a.download=filename;
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),800);
-    }
-    // "Ouvrir avec" : lien sans attribut download → iOS propose "Ouvrir avec Excel/Numbers…"
-    function doOpenWith(blob, filename){
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;
-      // Pas de a.download → iOS affiche "Ouvrir avec…" au lieu de télécharger
-      a.target='_blank';
-      a.rel='noopener';
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(url),3000);
-    }
-    function doMailto(blob, filename){
-      doDownload(blob, filename);
-      const subject=encodeURIComponent('Commande — '+filename);
-      const body=encodeURIComponent('Veuillez trouver ci-joint le fichier de commande : '+filename);
-      window.location.href=`mailto:?subject=${subject}&body=${body}`;
-    }
+    // ── Actions scan ──
+    function addOrIncrement(code){const normalizedCode=normalizeDigits(code);const type=detectCodeType(normalizedCode);if(!type){showInvalidModal(code);return false;}const existing=state.items.find(item=>item.code===normalizedCode);if(existing){existing.qty+=1;renderRows(normalizedCode);toast(`Code ${normalizedCode} → +1 (total: ${existing.qty})`);}else{state.items.push({code:normalizedCode,qty:1,type});renderRows(normalizedCode);toast(`✓ ${normalizedCode} ×1 — ${type}`);}flashScanInput();els.scanInput.value='';togglePlaceholder();focusScanInput();return true;}
+    function changeQty(index,value){const n=Math.max(1,parseInt(String(value||'').trim(),10)||1);if(!state.items[index])return;state.items[index].qty=n;renderRows(state.items[index].code);toast('Quantité modifiée');}
+    function deleteRow(index){if(index<0||index>=state.items.length)return;state.items.splice(index,1);renderRows();toast('Ligne supprimée',true);focusScanInput();}
+    function clearAllRows(){els.clearModal.classList.remove('hidden');}
+    function closeClearModal(){els.clearModal.classList.add('hidden');}
+    function confirmClearAll(){state.items=[];renderRows();closeClearModal();toast('Toutes les lignes ont été supprimées',true);focusScanInput();}
+
+    // ── Share ──
+    let _shareBlob=null,_shareFilename=null,_shareFile=null;
+    function openShareModal(blob,filename,file){_shareBlob=blob;_shareFilename=filename;_shareFile=file;const nb=document.getElementById('share-native');nb.style.display=(navigator.canShare&&navigator.canShare({files:[file]}))?'flex':'none';document.getElementById('share-modal').classList.remove('hidden');}
+    function closeShareModal(){document.getElementById('share-modal').classList.add('hidden');_shareBlob=null;_shareFilename=null;_shareFile=null;}
+    function doDownload(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),800);}
+    function doOpenWith(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+    function doMailto(blob,filename){doDownload(blob,filename);const s=encodeURIComponent('Commande — '+filename);const b=encodeURIComponent('Veuillez trouver ci-joint le fichier de commande : '+filename);window.location.href=`mailto:?subject=${s}&body=${b}`;}
 
     async function exportCsv(){
       const customerCode=normalizeDigits(els.customerCode.value).slice(0,6);
-      if(!isValidCustomerCode(customerCode)){ toast('Le code client doit contenir exactement 6 chiffres',true); els.customerCode.focus(); return; }
-      if(!state.items.length){ toast('Aucune ligne à exporter',true); return; }
-      const deliveryDateIso=els.deliveryDate.value || todayPlus(2);
-      const deliveryDateFr=formatDateFr(deliveryDateIso);
-      const rows=[];
-      rows.push(['CODE', customerCode]);
-      rows.push(['DELAI', deliveryDateFr]);
-      rows.push(['TYPE', 'COMMANDE']);
-      state.items.forEach(item=>rows.push([item.code, String(Math.max(1,parseInt(item.qty,10)||1))]));
+      if(!isValidCustomerCode(customerCode)){toast('Le code client doit contenir exactement 6 chiffres',true);return;}
+      if(!state.items.length){toast('Aucune ligne à exporter',true);return;}
+      const deliveryDateIso=els.deliveryDate.value||todayPlus(2);
+      const rows=[['CODE',customerCode],['DELAI',formatDateFr(deliveryDateIso)],['TYPE','COMMANDE']];
+      state.items.forEach(item=>rows.push([item.code,String(Math.max(1,parseInt(item.qty,10)||1))]));
       const csv='\uFEFF'+rows.map(r=>r.join(';')).join('\r\n');
-      const yyyymmdd=deliveryDateIso.replace(/-/g,'');
-      const filename=('COMMANDE_'+customerCode+'_'+yyyymmdd)+'.csv';
-      const blob=new Blob([csv], {type:'text/csv;charset=utf-8'});
-      const file=new File([blob], filename, {type:'text/csv;charset=utf-8'});
-      // iOS / Android : feuille de partage native directement
-      try{
-        if(navigator.canShare && navigator.canShare({files:[file]})){
-          await navigator.share({files:[file], title:filename, text:'Export commande'});
-          toast(`✓ Fichier partagé — ${state.items.length} lignes`);
-          return;
-        }
-      }catch(err){
-        if(err && (String(err.name)==='AbortError' || String(err.message||'').toLowerCase().includes('abort'))){ toast('Partage annulé', true); return; }
-      }
-      // Desktop (Windows…) : share sheet maison
-      openShareModal(blob, filename, file);
+      const filename='COMMANDE_'+customerCode+'_'+deliveryDateIso.replace(/-/g,'')+'.csv';
+      const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+      const file=new File([blob],filename,{type:'text/csv;charset=utf-8'});
+      try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:filename,text:'Export commande'});toast(`✓ Fichier partagé — ${state.items.length} lignes`);return;}}
+      catch(err){if(err&&(String(err.name)==='AbortError'||String(err.message||'').toLowerCase().includes('abort'))){toast('Partage annulé',true);return;}}
+      openShareModal(blob,filename,file);
     }
 
     function bindEvents(){
-      els.customerCode.addEventListener('input',()=>{ els.customerCode.value=normalizeDigits(els.customerCode.value).slice(0,6); const v=els.customerCode.value; if(v.length>0 && v.length<6){ els.customerCode.classList.add('invalid'); } else { els.customerCode.classList.remove('invalid'); } saveState(); });
-      els.customerCode.addEventListener('blur',()=>{ if(els.customerCode.value && normalizeDigits(els.customerCode.value).length!==6){ toast('Le code client doit contenir exactement 6 chiffres',true); } });
-      els.deliveryDate.addEventListener('change', saveState);
-      els.scanInput.addEventListener('focus', togglePlaceholder);
-      els.scanInput.addEventListener('blur', togglePlaceholder);
-      els.scanInput.addEventListener('input', togglePlaceholder);
-      els.scanInput.addEventListener('keydown',event=>{ if(event.key==='Enter'){ event.preventDefault(); event.stopPropagation(); addOrIncrement(els.scanInput.value); togglePlaceholder(); } });
-      els.btnAdd.addEventListener('click',()=>{ addOrIncrement(els.scanInput.value); togglePlaceholder(); });
-      els.btnExport.addEventListener('click', exportCsv);
-      els.btnClearAll.addEventListener('click', clearAllRows);
-      els.btnConfirmClear.addEventListener('click', confirmClearAll);
-      els.btnCancelClear.addEventListener('click', closeClearModal);
-      document.getElementById('btn-invalid-ok').addEventListener('click', closeInvalidModal);
-      // Share modal
-      // Share modal
-      document.getElementById('share-open-with').addEventListener('click',()=>{ if(_shareBlob&&_shareFilename){ doOpenWith(_shareBlob,_shareFilename); closeShareModal(); } });
-      document.getElementById('share-native').addEventListener('click',async()=>{ if(_shareFile){ try{ await navigator.share({files:[_shareFile],title:_shareFilename,text:'Export commande'}); toast(`✓ Fichier partagé`); closeShareModal(); }catch(err){ if(err&&(String(err.name)==='AbortError'||String(err.message||'').toLowerCase().includes('abort'))){ toast('Partage annulé',true); } closeShareModal(); } } });
-      document.getElementById('share-via-mail').addEventListener('click',()=>{ if(_shareBlob&&_shareFilename){ doMailto(_shareBlob,_shareFilename); toast(`✓ Mail ouvert`); closeShareModal(); } });
-      document.getElementById('share-download').addEventListener('click',()=>{ if(_shareBlob&&_shareFilename){ doDownload(_shareBlob,_shareFilename); toast(`✓ Fichier enregistré`); closeShareModal(); } });
-      document.getElementById('share-cancel').addEventListener('click', closeShareModal);
-      document.getElementById('share-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('share-modal')) closeShareModal(); });
-      window.addEventListener('beforeunload', saveState);
-      // Redirection globale clavier → champ scan (scanner Bluetooth ou clavier)
-      document.addEventListener('keyup', e=>{
-        if(!document.getElementById('invalid-modal').classList.contains('hidden')){
-          if(e.key==='Enter' && Date.now() - _invalidOpenedAt > 300){ closeInvalidModal(); }
-          return;
-        }
+      // Page 1
+      els.btnStart.addEventListener('click',goToScan);
+      els.btnBack.addEventListener('click',()=>showPage('header'));
+      els.customerCode.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();els.deliveryDate.focus();}});
+      els.deliveryDate.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();goToScan();}});
+      els.customerCode.addEventListener('input',()=>{els.customerCode.value=normalizeDigits(els.customerCode.value).slice(0,6);const v=els.customerCode.value;els.customerCode.classList.toggle('invalid',v.length>0&&v.length<6);saveState();});
+      els.customerCode.addEventListener('blur',()=>{if(els.customerCode.value&&normalizeDigits(els.customerCode.value).length!==6)toast('Le code client doit contenir exactement 6 chiffres',true);});
+      els.deliveryDate.addEventListener('change',saveState);
+
+      // Page 2
+      els.scanInput.addEventListener('focus',togglePlaceholder);
+      els.scanInput.addEventListener('blur',togglePlaceholder);
+      els.scanInput.addEventListener('input',togglePlaceholder);
+      els.scanInput.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();event.stopPropagation();addOrIncrement(els.scanInput.value);togglePlaceholder();}});
+      els.btnAdd.addEventListener('click',()=>{addOrIncrement(els.scanInput.value);togglePlaceholder();});
+      els.btnExport.addEventListener('click',exportCsv);
+      els.btnClearAll.addEventListener('click',clearAllRows);
+      els.btnConfirmClear.addEventListener('click',confirmClearAll);
+      els.btnCancelClear.addEventListener('click',closeClearModal);
+      document.getElementById('btn-invalid-ok').addEventListener('click',closeInvalidModal);
+      document.getElementById('share-open-with').addEventListener('click',()=>{if(_shareBlob&&_shareFilename){doOpenWith(_shareBlob,_shareFilename);closeShareModal();}});
+      document.getElementById('share-native').addEventListener('click',async()=>{if(_shareFile){try{await navigator.share({files:[_shareFile],title:_shareFilename,text:'Export commande'});toast('✓ Fichier partagé');closeShareModal();}catch(err){if(err&&(String(err.name)==='AbortError'||String(err.message||'').toLowerCase().includes('abort')))toast('Partage annulé',true);closeShareModal();}}});
+      document.getElementById('share-via-mail').addEventListener('click',()=>{if(_shareBlob&&_shareFilename){doMailto(_shareBlob,_shareFilename);toast('✓ Mail ouvert');closeShareModal();}});
+      document.getElementById('share-download').addEventListener('click',()=>{if(_shareBlob&&_shareFilename){doDownload(_shareBlob,_shareFilename);toast('✓ Fichier enregistré');closeShareModal();}});
+      document.getElementById('share-cancel').addEventListener('click',closeShareModal);
+      document.getElementById('share-modal').addEventListener('click',e=>{if(e.target===document.getElementById('share-modal'))closeShareModal();});
+      window.addEventListener('beforeunload',saveState);
+
+      // Keyup : fermer modal invalide
+      document.addEventListener('keyup',e=>{
+        if(!document.getElementById('invalid-modal').classList.contains('hidden')){if(e.key==='Enter'&&Date.now()-_invalidOpenedAt>300)closeInvalidModal();return;}
       });
-      // Buffer scanner : capture tous les keydown au niveau document
-      let _scanBuffer = '';
-      let _scanTimer = null;
-      function flushScanBuffer(){
-        clearTimeout(_scanTimer);
-        if(_scanBuffer){
-          els.scanInput.focus();
-          els.scanInput.value = _scanBuffer;
-          _scanBuffer = '';
-          togglePlaceholder();
-        }
-      }
-      document.addEventListener('keydown', e=>{
-        if(!document.getElementById('invalid-modal').classList.contains('hidden')) return;
-        if(!document.getElementById('clear-modal').classList.contains('hidden')) return;
-        if(!document.getElementById('share-modal').classList.contains('hidden')) return;
-        const tag = document.activeElement ? document.activeElement.tagName : '';
-        const isOtherInput = (tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') && document.activeElement !== els.scanInput;
-        if(isOtherInput) return;
-        if(e.metaKey || e.ctrlKey || e.altKey) return;
-        // Si le champ scan est déjà actif, laisser faire normalement
-        if(document.activeElement === els.scanInput) return;
-        // Champ scan inactif : bufferiser
-        if(e.key === 'Enter'){
-          flushScanBuffer();
-          // Laisser le keydown du scanInput gérer l'ajout
-          setTimeout(()=>{ els.scanInput.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true})); }, 30);
-          e.preventDefault();
-        } else if(e.key.length === 1){
-          _scanBuffer += e.key;
-          clearTimeout(_scanTimer);
-          _scanTimer = setTimeout(flushScanBuffer, 80);
-          e.preventDefault();
-        }
-      }, true); // capture phase pour intercepter avant tout
+
+      // Buffer scanner global (capture phase — uniquement page scan)
+      let _scanBuffer='',_scanTimer=null;
+      function flushScanBuffer(){clearTimeout(_scanTimer);if(_scanBuffer){els.scanInput.focus();els.scanInput.value=_scanBuffer;_scanBuffer='';togglePlaceholder();}}
+      document.addEventListener('keydown',e=>{
+        if(isModalOpen())return;
+        if(!els.pageScan.classList.contains('active'))return;
+        const tag=document.activeElement?document.activeElement.tagName:'';
+        const isOtherInput=(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT')&&document.activeElement!==els.scanInput;
+        if(isOtherInput)return;
+        if(e.metaKey||e.ctrlKey||e.altKey)return;
+        if(document.activeElement===els.scanInput)return;
+        if(e.key==='Enter'){flushScanBuffer();setTimeout(()=>{els.scanInput.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));},30);e.preventDefault();}
+        else if(e.key.length===1){_scanBuffer+=e.key;clearTimeout(_scanTimer);_scanTimer=setTimeout(flushScanBuffer,80);e.preventDefault();}
+      },true);
+
       togglePlaceholder();
     }
 
-    function registerPWA(){ if(!('serviceWorker' in navigator)) return; navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
-    function boot(){ if(!els.deliveryDate.value) els.deliveryDate.value=todayPlus(2); loadState(); if(!els.deliveryDate.value) els.deliveryDate.value=todayPlus(2); renderRows(); bindEvents(); registerPWA(); focusScanInput(); setStatus('Prêt à scanner'); }
+    function registerPWA(){if(!('serviceWorker' in navigator))return;navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+    function boot(){
+      if(!els.deliveryDate.value)els.deliveryDate.value=todayPlus(2);
+      loadState();
+      if(!els.deliveryDate.value)els.deliveryDate.value=todayPlus(2);
+      renderRows();
+      bindEvents();
+      registerPWA();
+      setStatus('Prêt à scanner');
+      // Si données déjà remplies ET articles existants → aller direct page scan
+      if(isValidCustomerCode(els.customerCode.value)&&els.deliveryDate.value&&state.items.length>0){
+        showPage('scan');
+      }
+    }
     boot();
   </script>
 </body>
