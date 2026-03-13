@@ -76,6 +76,7 @@
     .btn-primary{background:var(--accent);color:#032219}
     .btn-secondary{background:#20283a;color:var(--text);border-color:var(--line)}
     .btn-danger{background:#301a1f;color:#ffd7d7;border-color:#5a2c34}
+    .btn-blue{background:#0e2a4a;color:#a8d8ff;border-color:#1a4a7a}
     .btn-ghost{background:transparent;color:var(--muted);border-color:var(--line)}
     .btn:disabled{opacity:.55;cursor:not-allowed}
     .scan-flash{animation:flash .55s ease}
@@ -179,8 +180,8 @@
             </table>
             <div id="empty-state" class="empty"><div style="font-size:32px">📦</div><div class="empty-title">Aucun article scanné</div><div>Scannez un code ou ajoutez-le manuellement.</div></div>
           </div>
-          <div class="bottom-actions"><button id="btn-export" class="btn btn-secondary">Exporter CSV</button><button id="btn-clear-all" class="btn btn-danger">Vider</button></div>
-          <div class="footer-note">Le bouton <strong>Vider</strong> demande une confirmation.</div>
+          <div class="bottom-actions" style="margin-top:14px"><button id="btn-export" class="btn btn-blue">Exporter CSV</button><button id="btn-clear-all" class="btn btn-danger">Vider</button></div>
+
         </div>
       </article>
     </main>
